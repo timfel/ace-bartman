@@ -14,6 +14,6 @@ if(GAME_DEBUG)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DGAME_DEBUG")
 endif()
 if(ACE_DEBUG)
-        # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DACE_DEBUG -DGENERIC_MAIN_LOG_PATH='\"main.log\"'")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DACE_DEBUG -DGENERIC_MAIN_LOG_PATH=0")
+        # For ACE headers with ifdefs
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DACE_DEBUG -DGENERIC_MAIN_LOG_PATH='\"main.log\"'")
 endif()

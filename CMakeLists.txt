@@ -56,3 +56,8 @@ add_custom_command(OUTPUT ${MAPS}
 set(SOURCES ${C_SOURCES} ${HEADERS} ${MAPS} ${RESOURCES})
 
 include(target-definition.cmake)
+
+add_custom_command(
+        TARGET ${PROJECT_EXECUTABLE} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${PROJECT_SOURCE_DIR}/resources ${PROJECT_BINARY_DIR}/resources
+)
