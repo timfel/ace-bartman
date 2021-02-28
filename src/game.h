@@ -9,4 +9,3 @@ void gameGsLoop(void);
 void gameGsDestroy(void);
 
 #endif // _GAME_H_
-
