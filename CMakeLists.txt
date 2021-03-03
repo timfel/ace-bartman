@@ -59,5 +59,5 @@ include(target-definition.cmake)
 
 add_custom_command(
         TARGET ${PROJECT_EXECUTABLE} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} ARGS -E create_symlink ${PROJECT_SOURCE_DIR}/resources ${PROJECT_BINARY_DIR}/resources
+	COMMAND ${CMAKE_COMMAND} ARGS -E copy_directory ${PROJECT_SOURCE_DIR}/resources ${PROJECT_BINARY_DIR}/resources
 )
