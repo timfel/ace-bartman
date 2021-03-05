@@ -21,11 +21,11 @@
 
 
 #define TILE_SHIFT 4
-#define TILE_SIZE 1 << TILE_SHIFT
+#define TILE_SIZE (1 << TILE_SHIFT)
 #define MAP_SIZE 64
 
 #define BPP 5
-#define COLORS 1 << BPP
+#define COLORS (1 << BPP)
 
 static tView *s_pView; // View containing all the viewports
 static tVPort *s_pVpPanel; // Viewport for panel
@@ -42,7 +42,6 @@ static tBobNew s_GoldMineBob;
 // palette switching
 static uint16_t s_pMapPalette[COLORS];
 static uint16_t s_pPanelPalette[COLORS];
-static tCopBlock *s_pPaletteBlocks[2];
 
 #define MAP_HEIGHT 200
 #define PANEL_HEIGHT 48
@@ -60,10 +59,23 @@ void gameGsCreate(void) {
     logWrite("system use\n");
 
     logWrite("Create view\n");
+
+    UWORD tileStartPos = 0;
+    UWORD mapColorsPos = tileStartPos + tileBufferGetRawCopperlistInstructionCountStart(BPP);
+    UWORD tileBreakPos = mapColorsPos + COLORS;
+    UWORD simplePos = tileBreakPos + tileBufferGetRawCopperlistInstructionCountBreak(BPP);
+    UWORD panelColorsPos = simplePos + simpleBufferGetRawCopperlistInstructionCount(BPP);
+    UWORD finalWaitPos = panelColorsPos + COLORS;
+    UWORD copListLength = finalWait + 1;
+
     s_pView = viewCreate(0,
                          TAG_VIEW_GLOBAL_CLUT, 1,
-                         TAG_VIEW_COPLIST_MODE, VIEW_COPLIST_MODE_BLOCK,
+                         TAG_VIEW_COPLIST_MODE, VIEW_COPLIST_MODE_RAW,
+                         TAG_VIEW_COPLIST_RAW_COUNT, copListLength,
                          TAG_DONE);
+    tCopBfr *pCopBfr = s_pView->pCopList->pBackBfr;
+
+    copSetWait(&pCopBfr->pList[finalWaitPos].sWait, 0xfe, 0xff);
 
     logWrite("Create map\n");
 
@@ -72,9 +84,9 @@ void gameGsCreate(void) {
 
     // create map area
     paletteLoad("resources/forest_tileset.plt", s_pMapPalette, COLORS);
-    s_pPaletteBlocks[0] = copBlockCreate(s_pView->pCopList, COLORS, 0, 0);
+    tCopCmd *pCmds = &pCopBfr->pList[mapColorsPos];
     for (uint8_t i = 0; i < COLORS; i++) {
-        copMove(s_pView->pCopList, s_pPaletteBlocks[0], &g_pCustom->color[i], s_pMapPalette[i]);
+        copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pMapPalette[i]);
     }
 
     s_pVpMain = vPortCreate(0,
@@ -96,6 +108,8 @@ void gameGsCreate(void) {
                                     TAG_TILEBUFFER_TILESET, s_pMapBitmap,
                                     TAG_TILEBUFFER_IS_DBLBUF, 0,
                                     TAG_TILEBUFFER_REDRAW_QUEUE_LENGTH, 9,
+                                    TAG_TILEBUFFER_COPLIST_OFFSET_START, tileStartPos,
+                                    TAG_TILEBUFFER_COPLIST_OFFSET_BREAK, tileBreakPos,
                                     TAG_END);
     s_pMainCamera = s_pMapBuffer->pCamera;
     logWrite("set camera coords\n");
@@ -117,9 +131,9 @@ void gameGsCreate(void) {
 
     // create panel area
     paletteLoad("resources/human_panel.plt", s_pPanelPalette, COLORS);
-    s_pPaletteBlocks[1] = copBlockCreate(s_pView->pCopList, COLORS, 0, MAP_HEIGHT + 45);
+    pCmds = &pCopBfr->pList[panelColorsPos];
     for (uint8_t i = 0; i < COLORS; i++) {
-        copMove(s_pView->pCopList, s_pPaletteBlocks[1], &g_pCustom->color[i], s_pPanelPalette[i]);
+        copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pPanelPalette[i]);
     }
     
     s_pVpPanel = vPortCreate(0,
@@ -132,6 +146,7 @@ void gameGsCreate(void) {
     s_pPanelBuffer = simpleBufferCreate(0,
                                         TAG_SIMPLEBUFFER_VPORT, s_pVpPanel,
                                         TAG_SIMPLEBUFFER_BITMAP_FLAGS, BMF_CLEAR,
+                                        TAG_SIMPLEBUFFER_COPLIST_OFFSET, simplePos,
                                         TAG_END);
     bitmapLoadFromFile(s_pPanelBuffer->pFront, "resources/human_panel/graphics/ui/human/panel_2.bm", 48, 0);
 
