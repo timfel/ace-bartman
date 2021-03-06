@@ -185,7 +185,7 @@ void gameGsLoop(void) {
             gameExit();
         }
         if (keyCheck(KEY_C)) {
-            copDumpBlocks();
+            copDumpBfr(s_pView->pCopList->pBackBfr);
         }
         if (mouseGetX(MOUSE_PORT_1) > s_pVpMain->uwWidth - 5) {
             cameraMoveBy(s_pMainCamera, 1, 0);
