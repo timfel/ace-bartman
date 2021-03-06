@@ -65,17 +65,15 @@ void gameGsCreate(void) {
     UWORD tileBreakPos = mapColorsPos + COLORS;
     UWORD simplePos = tileBreakPos + tileBufferGetRawCopperlistInstructionCountBreak(BPP);
     UWORD panelColorsPos = simplePos + simpleBufferGetRawCopperlistInstructionCount(BPP);
-    UWORD finalWaitPos = panelColorsPos + COLORS;
-    UWORD copListLength = finalWait + 1;
+    UWORD copListLength = panelColorsPos + COLORS;
 
     s_pView = viewCreate(0,
                          TAG_VIEW_GLOBAL_CLUT, 1,
                          TAG_VIEW_COPLIST_MODE, VIEW_COPLIST_MODE_RAW,
                          TAG_VIEW_COPLIST_RAW_COUNT, copListLength,
                          TAG_DONE);
-    tCopBfr *pCopBfr = s_pView->pCopList->pBackBfr;
-
-    copSetWait(&pCopBfr->pList[finalWaitPos].sWait, 0xfe, 0xff);
+    tCopBfr *pCopBfrBack = s_pView->pCopList->pBackBfr;
+    tCopBfr *pCopBfrFront = s_pView->pCopList->pFrontBfr;
 
     logWrite("Create map\n");
 
@@ -84,7 +82,11 @@ void gameGsCreate(void) {
 
     // create map area
     paletteLoad("resources/forest_tileset.plt", s_pMapPalette, COLORS);
-    tCopCmd *pCmds = &pCopBfr->pList[mapColorsPos];
+    tCopCmd *pCmds = &pCopBfrBack->pList[mapColorsPos];
+    for (uint8_t i = 0; i < COLORS; i++) {
+        copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pMapPalette[i]);
+    }
+    pCmds = &pCopBfrFront->pList[mapColorsPos];
     for (uint8_t i = 0; i < COLORS; i++) {
         copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pMapPalette[i]);
     }
@@ -131,7 +133,11 @@ void gameGsCreate(void) {
 
     // create panel area
     paletteLoad("resources/human_panel.plt", s_pPanelPalette, COLORS);
-    pCmds = &pCopBfr->pList[panelColorsPos];
+    pCmds = &pCopBfrBack->pList[panelColorsPos];
+    for (uint8_t i = 0; i < COLORS; i++) {
+        copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pPanelPalette[i]);
+    }
+    pCmds = &pCopBfrFront->pList[panelColorsPos];
     for (uint8_t i = 0; i < COLORS; i++) {
         copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pPanelPalette[i]);
     }
