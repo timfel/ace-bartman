@@ -8,6 +8,9 @@ except ImportError:
     from warchive.archive import WarArchive
 
 
+CAMPAIGN_MAPS_START_IDX = 117
+
+
 def main(data, out):
     data = os.path.join(data, ".")
     mapdir = os.path.join(out, "maps")
@@ -19,7 +22,7 @@ def main(data, out):
 
     for idx, m in enumerate(["human", "orc"] * 12):
         lvl = idx // 2 + 1
-        map = archive.get_map(117 + idx)
+        map = archive.get_map(CAMPAIGN_MAPS_START_IDX + idx)
         map.name = f"{m}{lvl}"
         print(map.name, map.get_briefing())
         with open(f"{os.path.join(mapdir, map.name)}.map", "wb") as f:
