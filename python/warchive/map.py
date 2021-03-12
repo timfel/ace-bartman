@@ -2,6 +2,7 @@ import os
 
 
 from . import cache_decorator
+from .img import Tileset
 
 
 __all__ = ["Map"]
@@ -28,9 +29,9 @@ class Map:
     CHUNK_OFFSET = -2
     TILE_DATA_CHUNK = 0xD0 # 1 short
     TILE_FLAGS_CHUNK = 0xD2 # 1 short
-    TILESET_PALETTE_CHUNK = 0xD4 # 1 short
-    TILESET_INFO_CHUNK = 0xD6 # 1 short
-    TILESET_IMG_CHUNK = 0xD8 # 1 short
+    TILESET_INFO_CHUNK = 0xD4 # 1 short
+    TILESET_IMG_CHUNK = 0xD6 # 1 short
+    TILESET_PALETTE_CHUNK = 0xD8 # 1 short
     # after that, search for another 0xFFFFFFFF and then follows the unit data offset
     UNIT_DATA_OFFSET_MARKER = [0xff, 0xff, 0xff, 0xff]
     END_UNITS_MARKER = [0xff, 0xff]
@@ -96,19 +97,31 @@ class Map:
         tiledata = self.archive[self.content.read16() + self.CHUNK_OFFSET]
         self.content.seek(self.TILE_FLAGS_CHUNK)
         tileflags = self.archive[self.content.read16() + self.CHUNK_OFFSET]
-        return Tiles(tiledata, tileflags)
+        return Tiles(self.get_tileset(), tiledata, tileflags)
 
     @cache_decorator
     def get_tileset_palette(self):
-        pass
+        self.content.seek(self.TILESET_PALETTE_CHUNK)
+        return self.content.read16() + self.CHUNK_OFFSET
 
     @cache_decorator
     def get_tileset_info(self):
-        pass
+        self.content.seek(self.TILESET_INFO_CHUNK)
+        return self.content.read16() + self.CHUNK_OFFSET
 
     @cache_decorator
     def get_tileset_image(self):
-        pass
+        self.content.seek(self.TILESET_IMG_CHUNK)
+        return self.content.read16() + self.CHUNK_OFFSET
+
+    @cache_decorator
+    def get_tileset(self):
+        palette = self.archive[self.get_tileset_palette()]
+        info = self.archive[self.get_tileset_info()]
+        idx = self.get_tileset_image()
+        image = self.archive[idx]
+        print(self.get_tileset_info(), self.get_tileset_image(), self.get_tileset_palette())
+        return Tileset(self.archive, idx, palette, info, image)
 
     @cache_decorator
     def get_unit_data(self):
@@ -145,6 +158,8 @@ class Map:
         return Walls(self.content[walls_start:self.content.tell() - len(self.END_UNITS_MARKER)])
 
     def write(self, f):
+        tileset_index = self.get_tileset_image()
+        f.write(b"%03d\0" % tileset_index)
         tiles = self.get_tiles()
         for x in range(64):
             for y in range(64):
@@ -155,7 +170,7 @@ class Map:
 
 
 class Roads:
-    TILE = 0x22
+    TILE = 0x46 # TODO: real road layout, and then use tileset mapping
 
     def __new__(cls, content):
         inst = super().__new__(cls)
@@ -188,8 +203,9 @@ class Tiles:
     def match(terrain, flags):
         return len(terrain) == len(flags) == 64 * 64 * 2
 
-    def __new__(cls, terrain, flags):
+    def __new__(cls, tileset, terrain, flags):
         inst = super().__new__(cls)
+        inst.tileset = tileset
         inst.terrain = terrain
         inst.flags = flags
         return inst
@@ -199,7 +215,8 @@ class Tiles:
         offset = (x + y * 64) * 2
         self.terrain.seek(offset)
         self.flags.seek(offset)
-        return Tile(self.terrain.read16(), self.flags.read16())
+        tile = self.tileset.map_tile(self.terrain.read16())
+        return Tile(tile, self.flags.read16())
 
     def __iter__(self):
         return _TileIter(self)
