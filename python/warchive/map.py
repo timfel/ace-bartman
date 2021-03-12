@@ -34,6 +34,31 @@ class Map:
     # after that, search for another 0xFFFFFFFF and then follows the unit data offset
     UNIT_DATA_OFFSET_MARKER = [0xff, 0xff, 0xff, 0xff]
     END_UNITS_MARKER = [0xff, 0xff]
+    END_ROADS_MARKER = END_UNITS_MARKER
+    END_WALLS_MARKER = END_UNITS_MARKER
+
+    @staticmethod
+    def match(archive, content):
+        content = content.copy()
+        min_size = (
+            0xD8 +
+            len(UNIT_DATA_OFFSET_MARKER) +
+            len(END_UNITS_MARKER) +
+            len(END_ROADS_MARKER) +
+            len(END_WALLS_MARKER)
+        )
+        if size < min_size:
+            return False
+        try:
+            content.seek(self.TILE_DATA_CHUNK)
+            tiledata = archive[content.read16() + self.CHUNK_OFFSET]
+            content.seek(self.TILE_FLAGS_CHUNK)
+            tileflags = archive[content.read16() + self.CHUNK_OFFSET]
+        except:
+            return False
+        if not Tiles.match(tiledata, tileflags):
+            return False
+        return True
 
     def __new__(cls, archive, content):
         inst = super().__new__(cls)
@@ -159,6 +184,10 @@ class UnitData:
 
 
 class Tiles:
+    @staticmethod
+    def match(terrain, flags):
+        return len(terrain) == len(flags) == 64 * 64 * 2
+
     def __new__(cls, terrain, flags):
         inst = super().__new__(cls)
         inst.terrain = terrain

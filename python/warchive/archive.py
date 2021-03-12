@@ -56,13 +56,21 @@ class _Stream:
             self._pos += offset
         self._pos = max(min(self._pos, len(self)), 0)
 
+    def writable_copy(self):
+        return bytearray(self._view)
+
     def memory(self):
         return self._view
 
     def copy(self):
         return _Stream(self._view.tobytes())
 
+    def __iter__(self):
+        return iter(self._view)
+
     def __getitem__(self, part):
+        if isinstance(part, int):
+            return self._view[part]
         return _Stream(self._view[part])
 
     def __len__(self):
