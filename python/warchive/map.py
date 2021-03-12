@@ -120,7 +120,6 @@ class Map:
         info = self.archive[self.get_tileset_info()]
         idx = self.get_tileset_image()
         image = self.archive[idx]
-        print(self.get_tileset_info(), self.get_tileset_image(), self.get_tileset_palette())
         return Tileset(self.archive, idx, palette, info, image)
 
     @cache_decorator
@@ -158,8 +157,9 @@ class Map:
         return Walls(self.content[walls_start:self.content.tell() - len(self.END_UNITS_MARKER)])
 
     def write(self, f):
-        tileset_index = self.get_tileset_image()
-        f.write(b"%03d\0" % tileset_index)
+        tsname = self.get_tileset().name
+        assert len(tsname) == 3
+        f.write(b"%s\0" % tsname.encode())
         tiles = self.get_tiles()
         for x in range(64):
             for y in range(64):

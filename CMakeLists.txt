@@ -32,25 +32,17 @@ foreach(i RANGE 1 12 1)
         list(APPEND MAPS resources/maps/orc${i}.map)
 endforeach()
 
-set(RESOURCES resources/forest_tileset.plt)
+set(RESOURCES resources/imgs/for.plt)
 
 if(NOT DEFINED WAR1GUS_DATA)
        message(FATAL_ERROR "Point WAR1GUS_DATA to the data directory of war1gus")
 endif()
 
-add_custom_command(OUTPUT ${RESOURCES}
+add_custom_command(OUTPUT ${RESOURCES} ${MAPS}
                    COMMAND python3
-                   ARGS convert_images.py --data ${WAR1GUS_DATA} --output resources --prefix ${TOOLCHAIN_PATH}
+                   ARGS extract_data.py --data ${WAR1GUS_DATA} --output resources --prefix ${TOOLCHAIN_PATH}
                    COMMENT "Converting graphics"
                    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-                   VERBATIM)
-
-add_custom_command(OUTPUT ${MAPS}
-                   COMMAND python3
-                   ARGS convert_maps.py --data ${WAR1GUS_DATA} --output resources
-                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-                   COMMENT "Converting maps"
-                   SOURCES convert_maps.py
                    VERBATIM)
 
 set(SOURCES ${C_SOURCES} ${HEADERS} ${MAPS} ${RESOURCES})

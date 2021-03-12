@@ -97,7 +97,7 @@ class Tileset:
     """
 
     # These can only be hardcoded, there's no info about that in the archive
-    NAMES = {190: "forest", 193: "swamp", 196: "dungeon"}
+    NAMES = {190: "for", 193: "swa", 196: "dun"}
 
     TILE_SIZE = 16
     MINI_TILE_SIZE = 8
@@ -106,7 +106,6 @@ class Tileset:
 
     def __init__(self, archive, idx, palette, info, image, mapped_tiles=None):
         self.idx = idx
-        print(self.name)
         self.archive = archive
         self.palette = palette
         self.info = info
