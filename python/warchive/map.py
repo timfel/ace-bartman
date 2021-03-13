@@ -156,14 +156,16 @@ class Map:
         self.content.scan(self.END_UNITS_MARKER)
         return Walls(self.content[walls_start:self.content.tell() - len(self.END_UNITS_MARKER)])
 
+    OUTPUT_MAP_DATA_OFFSET = 3
+
     def write(self, f):
         tsname = self.get_tileset().name
-        assert len(tsname) == 3
-        f.write(b"%s\0" % tsname.encode())
+        assert len(tsname) == self.OUTPUT_MAP_DATA_OFFSET
+        f.write(b"%s" % tsname.encode())
         tiles = self.get_tiles()
         for x in range(64):
             for y in range(64):
-                f.seek(x * 64 + y, os.SEEK_SET)
+                f.seek(x * 64 + y + self.OUTPUT_MAP_DATA_OFFSET, os.SEEK_SET)
                 f.write(bytearray([tiles[x, y].tile % 256]))
         self.get_roads().write(f)
         self.get_walls().write(f)
@@ -182,7 +184,7 @@ class Roads:
             x1, y1, x2, y2, player = (self.content.read8() for _ in range(5))
             for x in range(x1 // 2, x2 // 2 + 1):
                 for y in range(y1 // 2, y2 // 2 + 1):
-                    f.seek(x * 64 + y, os.SEEK_SET)
+                    f.seek(x * 64 + y + Map.OUTPUT_MAP_DATA_OFFSET, os.SEEK_SET)
                     f.write(bytearray([self.TILE]))
 
 

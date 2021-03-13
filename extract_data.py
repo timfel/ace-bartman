@@ -203,7 +203,7 @@ def spritesheets(data, out, bindir):
         inargs = " -i ".join(inputfiles)
         outargs = " -o ".join(pngfiles)
         system(f"{rgb2amiga} -c 32 -f png-gpl -s ! -i {inargs} -o {outargs}")
-        palette = os.path.join(out, f"{name.lower()}.plt")
+        palette = os.path.join(imgdir, f"{name.lower()}.plt")
         system(f"{palette_conv} {pngfiles[0]}.gpl {palette}")
         for bmfile,pngfile in zip(bmfiles, pngfiles):
             # TODO: mask color is transparency
@@ -245,7 +245,7 @@ def maps(data, out):
         record_tileset(map.get_tileset())
         with open(f"{os.path.join(mapdir, map.name)}.map", "wb") as f:
             map.write(f)
-        return
+        break
 
 
 if __name__ == "__main__":

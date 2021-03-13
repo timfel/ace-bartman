@@ -43,6 +43,10 @@ static tBobNew s_GoldMineBob;
 static uint16_t s_pMapPalette[COLORS];
 static uint16_t s_pPanelPalette[COLORS];
 
+#define IMGDIR "resources/imgs/"
+#define MAPDIR "resources/maps/"
+#define LONGEST_MAPNAME "human12.map"
+
 #define MAP_HEIGHT 200
 #define PANEL_HEIGHT 48
 
@@ -53,40 +57,43 @@ static uint16_t s_pPanelPalette[COLORS];
  * }
  */
 
-void gameGsCreate(void) {
-    logWrite("load view 0\n");
-    viewLoad(0);
-    logWrite("system use\n");
 
-    logWrite("Create view\n");
+/*
+ * struct map {
+ *     tBitMap *terrain;
+ *     tTileBufferManager *mapBuffer;
+ * };
+ */
+
+
+void loadMap(const char* race, uint8_t index) {
+    char* mapname = MAPDIR LONGEST_MAPNAME;
+    char* palname = IMGDIR "for.plt";
+    char* imgname = IMGDIR "for.bm";
 
     UWORD tileStartPos = 0;
     UWORD mapColorsPos = tileStartPos + tileBufferGetRawCopperlistInstructionCountStart(BPP);
     UWORD tileBreakPos = mapColorsPos + COLORS;
-    UWORD simplePos = tileBreakPos + tileBufferGetRawCopperlistInstructionCountBreak(BPP);
-    UWORD panelColorsPos = simplePos + simpleBufferGetRawCopperlistInstructionCount(BPP);
-    UWORD copListLength = panelColorsPos + COLORS;
 
-    s_pView = viewCreate(0,
-                         TAG_VIEW_GLOBAL_CLUT, 1,
-                         TAG_VIEW_COPLIST_MODE, VIEW_COPLIST_MODE_RAW,
-                         TAG_VIEW_COPLIST_RAW_COUNT, copListLength,
-                         TAG_DONE);
-    tCopBfr *pCopBfrBack = s_pView->pCopList->pBackBfr;
-    tCopBfr *pCopBfrFront = s_pView->pCopList->pFrontBfr;
+    snprintf(mapname + strlen(MAPDIR), strlen(LONGEST_MAPNAME), "%s%d.map", race, index);
+    tFile *map = fileOpen(mapname, "r");
+    if (!map) {
+        logWrite("ERROR: Cannot open file %s!\n", mapname);
+    }
 
-    logWrite("Create map\n");
+    // three bytes behind map data are name of the palette/terrain
+    logWrite("Loaded palname: %s\n", palname);
+    fileRead(map, palname + strlen(IMGDIR), 3);
+    strncpy(imgname + strlen(IMGDIR), palname + strlen(IMGDIR), 3);
 
-    s_pGoldMineBitmap = bitmapCreateFromFile("resources/forest_tileset/graphics/tilesets/forest/neutral/buildings/gold_mine.bm", 0);
-    s_pGoldMineMask = bitmapCreateFromFile("resources/forest_tileset/graphics/tilesets/forest/neutral/buildings/gold_mine_mask.bm", 0);
-
+    logWrite("Loading map: %s %s\n", palname, imgname);
     // create map area
-    paletteLoad("resources/forest_tileset.plt", s_pMapPalette, COLORS);
-    tCopCmd *pCmds = &pCopBfrBack->pList[mapColorsPos];
+    paletteLoad(palname, s_pMapPalette, COLORS);
+    tCopCmd *pCmds = &s_pView->pCopList->pBackBfr->pList[mapColorsPos];
     for (uint8_t i = 0; i < COLORS; i++) {
         copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pMapPalette[i]);
     }
-    pCmds = &pCopBfrFront->pList[mapColorsPos];
+    pCmds = &s_pView->pCopList->pFrontBfr->pList[mapColorsPos];
     for (uint8_t i = 0; i < COLORS; i++) {
         copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pMapPalette[i]);
     }
@@ -96,11 +103,7 @@ void gameGsCreate(void) {
                             TAG_VPORT_BPP, BPP,
                             TAG_VPORT_HEIGHT, MAP_HEIGHT,
                             TAG_END);
-    for (uint8_t i = 0; i < COLORS; i++) {
-        s_pVpMain->pPalette[i] = s_pMapPalette[i];
-    }
-    s_pMapBitmap = bitmapCreateFromFile("resources/forest_tileset/graphics/tilesets/forest/terrain.bm", 0);
-    logWrite("Create tilebuffer\n");
+    s_pMapBitmap = bitmapCreateFromFile(imgname, 0);
     s_pMapBuffer = tileBufferCreate(0,
                                     TAG_TILEBUFFER_VPORT, s_pVpMain,
                                     TAG_TILEBUFFER_BITMAP_FLAGS, BMF_CLEAR,
@@ -114,33 +117,44 @@ void gameGsCreate(void) {
                                     TAG_TILEBUFFER_COPLIST_OFFSET_BREAK, tileBreakPos,
                                     TAG_END);
     s_pMainCamera = s_pMapBuffer->pCamera;
-    logWrite("set camera coords\n");
     cameraSetCoord(s_pMainCamera, 0, 0);
 
-    bobNewManagerCreate(s_pMapBuffer->pScroll->pFront, s_pMapBuffer->pScroll->pBack, s_pMapBuffer->pScroll->uwBmAvailHeight);
-    bobNewInit(&s_GoldMineBob, 64, 64, 0, s_pGoldMineBitmap, s_pGoldMineMask, 80, 80);
-    bobNewReallocateBgBuffers();
-
-    logWrite("file tile data\n");
-    tFile *map = fileOpen("resources/maps/orc12.map", "r");
     for (int x = 0; x < MAP_SIZE; x++) {
+        logWrite("file tile data %d\n", x);
         fileRead(map, s_pMapBuffer->pTileData[x], MAP_SIZE);
     }
     fileClose(map);
 
-    logWrite("redraw all\n");
     tileBufferRedrawAll(s_pMapBuffer);
+}
+
+void gameGsCreate(void) {
+    viewLoad(0);
+
+    UWORD tileStartPos = 0;
+    UWORD mapColorsPos = tileStartPos + tileBufferGetRawCopperlistInstructionCountStart(BPP);
+    UWORD tileBreakPos = mapColorsPos + COLORS;
+    UWORD simplePos = tileBreakPos + tileBufferGetRawCopperlistInstructionCountBreak(BPP);
+    UWORD panelColorsPos = simplePos + simpleBufferGetRawCopperlistInstructionCount(BPP);
+    UWORD copListLength = panelColorsPos + COLORS;
+
+    s_pView = viewCreate(0,
+                         TAG_VIEW_COPLIST_MODE, VIEW_COPLIST_MODE_RAW,
+                         TAG_VIEW_COPLIST_RAW_COUNT, copListLength,
+                         TAG_DONE);
+
+    loadMap("human", 1);
 
     // create panel area
-    paletteLoad("resources/human_panel.plt", s_pPanelPalette, COLORS);
-    pCmds = &pCopBfrBack->pList[panelColorsPos];
-    for (uint8_t i = 0; i < COLORS; i++) {
-        copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pPanelPalette[i]);
-    }
-    pCmds = &pCopBfrFront->pList[panelColorsPos];
-    for (uint8_t i = 0; i < COLORS; i++) {
-        copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pPanelPalette[i]);
-    }
+    // paletteLoad("resources/human_panel.plt", s_pPanelPalette, COLORS);
+    // pCmds = &pCopBfrBack->pList[panelColorsPos];
+    // for (uint8_t i = 0; i < COLORS; i++) {
+    //     copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pPanelPalette[i]);
+    // }
+    // pCmds = &pCopBfrFront->pList[panelColorsPos];
+    // for (uint8_t i = 0; i < COLORS; i++) {
+    //     copSetMove(&pCmds[i].sMove, &g_pCustom->color[i], s_pPanelPalette[i]);
+    // }
     
     s_pVpPanel = vPortCreate(0,
                              TAG_VPORT_VIEW, s_pView,
@@ -154,12 +168,9 @@ void gameGsCreate(void) {
                                         TAG_SIMPLEBUFFER_BITMAP_FLAGS, BMF_CLEAR,
                                         TAG_SIMPLEBUFFER_COPLIST_OFFSET, simplePos,
                                         TAG_END);
-    bitmapLoadFromFile(s_pPanelBuffer->pFront, "resources/human_panel/graphics/ui/human/panel_2.bm", 48, 0);
+    // bitmapLoadFromFile(s_pPanelBuffer->pFront, "resources/human_panel/graphics/ui/human/panel_2.bm", 48, 0);
 
-    // finish up
-    logWrite("load view\n");
     viewLoad(s_pView);
-    logWrite("unuse system\n");
     systemUnuse();
 }
 
@@ -198,13 +209,13 @@ void gameGsLoop(void) {
         }
     }
 
-    bobNewBegin(s_pMapBuffer->pScroll->pBack);
-    if (tileBufferIsTileOnBuffer(s_pMapBuffer, 80 / 16, 80 / 16)) {
-        bobNewPush(&s_GoldMineBob);
-    }
-    bobNewPushingDone();
-    bobNewProcessNext();
-    bobNewEnd();
+    // bobNewBegin(s_pMapBuffer->pScroll->pBack);
+    // if (tileBufferIsTileOnBuffer(s_pMapBuffer, 80 / 16, 80 / 16)) {
+    //     bobNewPush(&s_GoldMineBob);
+    // }
+    // bobNewPushingDone();
+    // bobNewProcessNext();
+    // bobNewEnd();
 
     viewProcessManagers(s_pView);
     copProcessBlocks();
