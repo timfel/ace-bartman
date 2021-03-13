@@ -35,6 +35,7 @@ add_custom_command(OUTPUT ${RESOURCES}
                    ARGS ${PROJECT_SOURCE_DIR}/extract_data.py --data ${WAR1GUS_DATA} --output ${RESOURCES} --prefix ${TOOLCHAIN_PATH}
                    COMMENT "Converting graphics"
                    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                   MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/extract_data.py
                    VERBATIM)
 
 set(SOURCES ${C_SOURCES} ${HEADERS} ${RESOURCES})

@@ -192,9 +192,10 @@ class Tileset:
             if tile > k[1]:
                 continue
             elif v:
-                # we're not after the range, we're not before it, we're inside and
-                # there's a custom mapping.
-                return v
+                # we're not after the range, we're not before it, we're inside
+                # and there's a custom mapping. The mapping is in the old index,
+                # so we map that again
+                return self.map_tile(v)
             else:
                 # we're not after the range, we're not before it, we're inside and
                 # there isn't a custom mapping. so our tile was removed, but it
