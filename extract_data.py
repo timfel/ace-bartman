@@ -213,7 +213,8 @@ def system(s):
     code = os.system(s)
     print("Running", s)
     if code != 0:
-        import pdb; pdb.set_trace()
+        print("ERROR")
+        sys.exit(code)
     return
 
 
@@ -226,10 +227,10 @@ def spritesheets(out, bindir):
     imgdir = os.path.join(out, "imgs")
     os.makedirs(imgdir, exist_ok=True)
 
-    rgb2amiga = os.path.join(bindir, 'bin', 'Rgb2Amiga')
-    bitmap_conv = os.path.join(bindir, 'bin', 'bitmap_conv')
-    tileset_conv = os.path.join(bindir, 'bin', 'tileset_conv')
-    palette_conv = os.path.join(bindir, 'bin', 'palette_conv')
+    rgb2amiga = os.path.join(bindir, 'Rgb2Amiga')
+    bitmap_conv = os.path.join(bindir, 'bitmap_conv')
+    tileset_conv = os.path.join(bindir, 'tileset_conv')
+    palette_conv = os.path.join(bindir, 'palette_conv')
     w_h_re = re.compile(r"PNG image data, (\d+) x (\d+),")
     transparency = r'\#FF00FF'
 
