@@ -68,6 +68,51 @@ class Spritesheet(Image):
                 frames[i - 1] = Frame(*frames[:-1], chunk[lasto:frame_offset_in_chunk])
         frames.append((xoff, yoff, w, h, frame_offset_in_chunk))
 
+    def __init__(self, archive, chunk, palette):
+        self.archive = archive
+        self.chunk = chunk.copy()
+        self.palette = palette
+
+    def extract(self):
+        palette = Palette(self.archive, self.palette).get_rgb_array()
+        numframes = self.chunk.read16()
+        max_w = self.chunk.read8()
+        max_h = self.chunk.read8()
+        frames = []
+
+        image = memoryview(bytearray(bytearray([0]) * max_w * max_h * numframes))
+        # index 0 is used for transparency in these spritesheets
+        palette[0:3] = Palette.TRANSPARENCY
+        chunkstart = self.chunk.tell()
+
+        # we're always saving as vertical framesheet. One long shift down and
+        # then continuous read is better
+
+        for i in range(numframes):
+            xoff = self.chunk.read8()
+            yoff = self.chunk.read8()
+            framew = self.chunk.read8()
+            frameh = self.chunk.read8()
+            fileoffset = self.chunk.read32()
+
+            if fileoffset & 0x80000000:
+                # high bit is set
+                fileoffset &= 0x7FFFFFFF
+                framew += 256
+
+            # TODO: support or at least detect and fail on compressed images
+
+            dest_pixel = max_h * max_w * i + xoff + yoff * max_w
+            source = self.chunk[chunkstart + fileoffset - 4:].memory()
+            for src_pixel in range(0, frameh * framew, framew):
+                image[dest_pixel:dest_pixel + framew] = source[src_pixel:src_pixel + framew]
+                dest_pixel += max_w
+
+        return Bitmap(max_w, max_h * numframes, image, rgb_palette=palette)
+
+    def write(self, f):
+        self.extract().write(f)
+
 
 class Frame:
     def __init__(self, x, y, w, h, chunk):
@@ -219,6 +264,8 @@ class Palette:
     """
 
     GLOBAL_PALETTE_INDEX = 217
+    MAGIC_COLOR = [63, 0, 63]
+    TRANSPARENCY = [252, 0, 252]
 
     def __init__(self, archive, chunk):
         self.archive = archive
@@ -236,11 +283,11 @@ class Palette:
                 gpalette = self.archive[self.GLOBAL_PALETTE_INDEX]
                 for i in range(128):
                     idx = i * 3
-                    if palette[idx:idx + 3] == [63, 0, 63]:
+                    if palette[idx:idx + 3] == self.MAGIC_COLOR:
                         palette[idx:idx + 3] = gpalette[idx:idx + 3]
                 for i in range(128, 256):
                     idx = i * 3
-                    if gpalette[idx:idx + 3] != [63, 0, 63]:
+                    if gpalette[idx:idx + 3] != self.MAGIC_COLOR:
                         palette[idx:idx + 3] = gpalette[idx:idx + 3]
             for i in range(768):
                 palette[i] <<= 2
