@@ -172,7 +172,7 @@ class Map:
 
 
 class Roads:
-    TILE = 0x46 # TODO: real road layout, and then use tileset mapping
+    TILE = 18 # TODO: real road layout, and then use tileset mapping
 
     def __new__(cls, content):
         inst = super().__new__(cls)
@@ -189,7 +189,7 @@ class Roads:
 
 
 class Walls(Roads):
-    TILE = 0x10
+    TILE = 0
 
 
 class UnitData:
