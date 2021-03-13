@@ -19,24 +19,82 @@ CAMPAIGN_MAPS_START_IDX = 117
 
 MAPPED_TILES = {
     "for": {
-        (0x000, 0x00F): 0x10, # walls until 4-way
-        (0x011, 0x01B): 0x10, # walls between 4-way and 4-way-broken
-        (0x01D, 0x024): None, # walls between 4-way-broken and 4-way-remains
-        (0x026, 0x028): None, # remains of walls until blackended remains of buildings
-        (0x038, 0x045): 0x46, # all roads up to the first (singular) one until the trees
+        (0x00, 0x0F): 0x10, # walls until 4-way
+        (0x11, 0x1B): 0x10, # walls between 4-way and 4-way-broken
+        (0x1D, 0x24): None, # walls between 4-way-broken and 4-way-remains
+        (0x26, 0x28): None, # remains of walls until blackended remains of buildings
+        (0x38, 0x45): 0x46, # all roads up to the first (singular) one until the trees
         # Only trees are in the saved maps until here, so we can just subtract an offset from them.
         # Now start the tiles that we'll have to re-map and not just subtract an offset
-            (0x061, 0x069): 0x06D, # grass transitions -> all map to 0x06D (just green grass)
-        (0x070, 0x070): 0x06D, # grass
-        (0x074, 0x07B): 0x06D, # grass
-        (0x084, 0x085): None, # weird water
-        (0x086, 0x08E): 0x06D, # grass
-        (0x091, 0x092): None, # weird water
-        (0x09B, 0x0a3): 0x06D, # grass
-        (0x0a7, 0x0b7): 0x06D, # grass
+            (0x61, 0x69): 0x6D, # grass transitions -> all map to 0x6D (just green grass)
+        (0x70, 0x70): 0x6D, # grass
+        (0x74, 0x7B): 0x6D, # grass
+        (0x84, 0x85): None, # weird water
+        (0x86, 0x8E): 0x6D, # grass
+        (0x91, 0x92): None, # weird water
+        (0x9B, 0xa3): 0x6D, # grass
+        (0xa7, 0xb7): 0x6D, # grass
     },
-    # "swa": {},
-    # "dun": {},
+    "swa": {
+        (0x00, 0x0F): 0x10, # walls until 4-way
+        (0x11, 0x1B): 0x10, # walls between 4-way and 4-way-broken
+        (0x1D, 0x24): None, # walls between 4-way-broken and 4-way-remains
+        (0x26, 0x29): None, # remains of walls until blackended remains of buildings
+        (0x39, 0x39): 0x3a, # road mapping
+        (0x3b, 0x47): 0x3a, # road mapping
+        (0x65, 0x65): None, # black tile?
+        (0x67, 0x67): 0x66, # grass
+        (0x6b, 0x6c): 0x66, # grass
+        (0x70, 0x71): 0x66, # grass
+        (0x70, 0x71): 0x66, # grass
+        (0x76, 0x76): 0x78, # grass stone deko
+        (0x77, 0x77): 0x79, # grass tree deko
+        (0x84, 0x84): 0x87, # grass deko
+        (0x85, 0x85): 0x88, # grass deko
+        (0x86, 0x86): 0x89, # grass deko
+        (0x9c, 0x9c): 0x78, # grass stone deko
+        (0x9d, 0x9d): 0x79, # grass tree deko
+        (0xa9, 0xa9): 0x87, # grass deko
+        (0xaa, 0xaa): 0x88, # grass deko
+        (0xab, 0xab): 0x89, # grass deko
+        (0xbe, 0xc5): 0x66, # grass
+        (0xcb, 0xd2): 0x66, # grass
+        (0xd8, 0xdf): 0x66, # grass
+        (0xe7, 0xee): 0x66, # grass
+        (0xf2, 0xf9): 0x66, # grass
+        (0xff, 0x105): 0x66, # grass
+        (0x109, 0x10f): 0x66, # grass
+        (0x113, 0x11a): 0x66, # grass
+    },
+    "dun": {
+        (0x00, 0x09): None,
+        (0x2e, 0x2e): None,
+        (0x34, 0x34): 0x35, # just darkness
+        (0x39, 0x3a): 0x3b,
+        (0x4b, 0x4c): 0x4d,
+        (0x52, 0x56): 0x57, # ground
+        (0x5e, 0x5e): 0x35,
+        (0x63, 0x63): 0x35,
+        (0x69, 0x6e): 0x57,
+        (0x7e, 0x83): 0x57,
+        (0x95, 0x9a): 0x57,
+        (0xaa, 0xb0): 0x57,
+        (0xb4, 0xb4): 0x35,
+        (0xb6, 0xb6): 0x35,
+        (0xb7, 0xb7): 0x57,
+        (0xba, 0xba): 0x57,
+        (0xc1, 0xc6): 0x57,
+        (0xcc, 0xcc): 0x35,
+        (0xcf, 0xcf): 0x35,
+        (0xd5, 0xda): 0x57,
+        (0xe7, 0xed): 0x57,
+        (0xf0, 0xf0): 0x35,
+        (0xf5, 0xf5): 0x35,
+        (0xfe, 0x103): 0x57,
+        (0x110, 0x111): 0x57,
+        (0x128, 0x129): 0x57,
+        (0x131, 0x134): 0x57,
+    },
 }
 
 
@@ -183,12 +241,8 @@ def spritesheets(data, out, bindir):
         inputfiles.append(f"{os.path.join(imgdir, name)}.bmp")
         pngfiles.append(inputfiles[-1].replace(".bmp", ""))
         bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
-        try:
-            with open(inputfiles[-1], "xb") as f:
-                tileset.write(f)
-        except FileExistsError:
-            # only write the tileset once
-            pass
+        with open(inputfiles[-1], "wb") as f:
+            tileset.write(f)
 
         for k,v in MAP_SPRITESHEETS.items():
             # TODO: extract all the spritesheets using the palette of that tileset
@@ -245,7 +299,6 @@ def maps(data, out):
         record_tileset(map.get_tileset())
         with open(f"{os.path.join(mapdir, map.name)}.map", "wb") as f:
             map.write(f)
-        break
 
 
 if __name__ == "__main__":
