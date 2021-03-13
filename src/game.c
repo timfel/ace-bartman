@@ -75,14 +75,13 @@ void loadMap(const char* race, uint8_t index) {
     UWORD mapColorsPos = tileStartPos + tileBufferGetRawCopperlistInstructionCountStart(BPP);
     UWORD tileBreakPos = mapColorsPos + COLORS;
 
-    snprintf(mapname + strlen(MAPDIR), strlen(LONGEST_MAPNAME), "%s%d.map", race, index);
+    snprintf(mapname + strlen(MAPDIR), strlen(LONGEST_MAPNAME) + 1, "%s%d.map", race, index);
     tFile *map = fileOpen(mapname, "r");
     if (!map) {
         logWrite("ERROR: Cannot open file %s!\n", mapname);
     }
 
     // three bytes behind map data are name of the palette/terrain
-    logWrite("Loaded palname: %s\n", palname);
     fileRead(map, palname + strlen(IMGDIR), 3);
     strncpy(imgname + strlen(IMGDIR), palname + strlen(IMGDIR), 3);
 
@@ -143,7 +142,7 @@ void gameGsCreate(void) {
                          TAG_VIEW_COPLIST_RAW_COUNT, copListLength,
                          TAG_DONE);
 
-    loadMap("human", 1);
+    loadMap("human", 12);
 
     // create panel area
     // paletteLoad("resources/human_panel.plt", s_pPanelPalette, COLORS);
