@@ -50,13 +50,6 @@ static uint16_t s_pPanelPalette[COLORS];
 #define MAP_HEIGHT 200
 #define PANEL_HEIGHT 48
 
-/*
- * void myTileDrawCallback(UWORD uwTileX, UWORD uwTileY,
- *                         tBitMap *pBitMap, UWORD uwBitMapX, UWORD uwBitMapY) {
- *     _logWrite("Drawing tile %d:%d\n", uwTileX, uwTileY);
- * }
- */
-
 
 /*
  * struct map {
@@ -180,16 +173,16 @@ void gameGsLoop(void) {
     case 0:
         // This will loop every frame
         if (keyCheck(KEY_W)) {
-            cameraMoveBy(s_pMainCamera, 0, -1);
+            cameraMoveBy(s_pMainCamera, 0, -5);
         }
         if (keyCheck(KEY_S)) {
-            cameraMoveBy(s_pMainCamera, 0, 1);
+            cameraMoveBy(s_pMainCamera, 0, 5);
         }
         if (keyCheck(KEY_A)) {
-            cameraMoveBy(s_pMainCamera, -1, 0);
+            cameraMoveBy(s_pMainCamera, -5, 0);
         }
         if (keyCheck(KEY_D)) {
-            cameraMoveBy(s_pMainCamera, 1, 0);
+            cameraMoveBy(s_pMainCamera, 5, 0);
         }
         if (keyCheck(KEY_ESCAPE)) {
             gameExit();
@@ -226,6 +219,5 @@ void gameGsDestroy(void) {
     systemUse();
 
     // This will also destroy all associated viewports and viewport managers
-    bobNewManagerDestroy();
     viewDestroy(s_pView);
 }
