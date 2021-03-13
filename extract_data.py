@@ -11,7 +11,7 @@ except ImportError:
     from warchive.archive import WarArchive
 
 
-from warchive.img import Tileset
+from warchive.img import Tileset, Spritesheet
 
 
 CAMPAIGN_MAPS_START_IDX = 117
@@ -211,6 +211,7 @@ TILESETS = {}
 
 def system(s):
     code = os.system(s)
+    print("Running", s)
     if code != 0:
         import pdb; pdb.set_trace()
     return
@@ -221,7 +222,7 @@ def record_tileset(tileset):
     TILESETS[tileset.name] = tileset
 
 
-def spritesheets(data, out, bindir):
+def spritesheets(out, bindir):
     imgdir = os.path.join(out, "imgs")
     os.makedirs(imgdir, exist_ok=True)
 
@@ -230,7 +231,7 @@ def spritesheets(data, out, bindir):
     tileset_conv = os.path.join(bindir, 'bin', 'tileset_conv')
     palette_conv = os.path.join(bindir, 'bin', 'palette_conv')
     w_h_re = re.compile(r"PNG image data, (\d+) x (\d+),")
-    transparency = r'\#BBBBBB'
+    transparency = r'\#FF00FF'
 
     for name, tileset in TILESETS.items():
         os.makedirs(os.path.join(imgdir, name), exist_ok=True)
@@ -245,14 +246,11 @@ def spritesheets(data, out, bindir):
             tileset.write(f)
 
         for k,v in MAP_SPRITESHEETS.items():
-            # TODO: extract all the spritesheets using the palette of that tileset
-
-            # Then add them to inputfiles, outputfiles, bmfiles
-
-            # inputfiles.append(f"{os.path.join(imgdir, name, k)}.bmp")
-            # pngfiles.append(inputfiles[-1].replace(".bmp", ""))
-            # bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
-            pass
+            inputfiles.append(f"{os.path.join(imgdir, name, k)}.bmp")
+            pngfiles.append(inputfiles[-1].replace(".bmp", ""))
+            bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
+            with open(inputfiles[-1], "wb") as f:
+                Spritesheet(ARCHIVE, ARCHIVE[v], tileset.palette).write(f)
 
         inargs = " -i ".join(inputfiles)
         outargs = " -o ".join(pngfiles)
@@ -260,7 +258,6 @@ def spritesheets(data, out, bindir):
         palette = os.path.join(imgdir, f"{name.lower()}.plt")
         system(f"{palette_conv} {pngfiles[0]}.gpl {palette}")
         for bmfile,pngfile in zip(bmfiles, pngfiles):
-            # TODO: mask color is transparency
             info = subprocess.check_output(f"file {pngfile}.png", shell=True).decode()
             w, h = (int(x) for x in w_h_re.search(info).groups())
             if w % 16:
@@ -281,18 +278,14 @@ def spritesheets(data, out, bindir):
 
 
 
-def maps(data, out):
-    data = os.path.join(data, ".")
+def maps(out):
     mapdir = os.path.join(out, "maps")
     os.makedirs(mapdir, exist_ok=True)
     palettes = os.path.join(out, ".")
 
-    archive = WarArchive(os.path.join(data, "DATA.WAR"))
-    archive.get_map(117).get_tiles()
-
     for idx, m in enumerate(["human", "orc"] * 12):
         lvl = idx // 2 + 1
-        map = archive.get_map(CAMPAIGN_MAPS_START_IDX + idx)
+        map = ARCHIVE.get_map(CAMPAIGN_MAPS_START_IDX + idx)
         map.name = f"{m}{lvl}"
         print(map.name, map.get_briefing())
 
@@ -309,5 +302,6 @@ if __name__ == "__main__":
     parser.add_argument('--output', required=True)
     parser.add_argument('--prefix', required=True)
     parsed_args = parser.parse_args(sys.argv[1:])
-    maps(parsed_args.data, parsed_args.output)
-    spritesheets(parsed_args.data, parsed_args.output, parsed_args.prefix)
+    ARCHIVE = WarArchive(os.path.join(parsed_args.data, "DATA.WAR"))
+    maps(parsed_args.output)
+    spritesheets(parsed_args.output, parsed_args.prefix)
