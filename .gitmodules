@@ -9,3 +9,6 @@
 [submodule "deps/vscode-amiga-debug"]
 	path = deps/vscode-amiga-debug
 	url = https://github.com/BartmanAbyss/vscode-amiga-debug.git
+[submodule "deps/rgb2amiga"]
+	path = deps/rgb2amiga
+	url = https://github.com/Pixinn/rgb2amiga.git
