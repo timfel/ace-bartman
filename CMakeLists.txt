@@ -24,32 +24,19 @@ set(C_SOURCES src/main.c
 set(HEADERS src/game.h
             src/bob_new.h)
 
-foreach(i RANGE 1 12 1)
-        list(APPEND MAPS resources/maps/human${i}.map)
-endforeach()
-
-foreach(i RANGE 1 12 1)
-        list(APPEND MAPS resources/maps/orc${i}.map)
-endforeach()
-
-# set(RESOURCES resources/imgs/for.plt)
+set(RESOURCES resources)
 
 if(NOT DEFINED WAR1GUS_DATA)
        message(FATAL_ERROR "Point WAR1GUS_DATA to the data directory of war1gus")
 endif()
 
-add_custom_command(OUTPUT ${MAPS}
+add_custom_command(OUTPUT ${RESOURCES}
                    COMMAND python3
-                   ARGS extract_data.py --data ${WAR1GUS_DATA} --output resources --prefix ${TOOLCHAIN_PATH}
+                   ARGS ${PROJECT_SOURCE_DIR}/extract_data.py --data ${WAR1GUS_DATA} --output ${RESOURCES} --prefix ${TOOLCHAIN_PATH}
                    COMMENT "Converting graphics"
-                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                    VERBATIM)
 
-set(SOURCES ${C_SOURCES} ${HEADERS} ${MAPS} ${RESOURCES})
+set(SOURCES ${C_SOURCES} ${HEADERS} ${RESOURCES})
 
 include(target-definition.cmake)
-
-add_custom_command(
-        TARGET ${PROJECT_EXECUTABLE} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} ARGS -E copy_directory ${PROJECT_SOURCE_DIR}/resources ${PROJECT_BINARY_DIR}/resources
-)
