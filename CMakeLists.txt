@@ -24,7 +24,10 @@ set(C_SOURCES src/main.c
 set(HEADERS src/game.h
             src/bob_new.h)
 
-set(RESOURCES resources/for.plt)
+set(RESOURCES
+        ${PROJECT_BINARY_DIR}/resources/imgs/for.plt
+        ${PROJECT_BINARY_DIR}/resources/imgs/swa.plt
+        ${PROJECT_BINARY_DIR}/resources/imgs/dun.plt)
 
 if(NOT DEFINED WAR1GUS_DATA)
        message(FATAL_ERROR "Point WAR1GUS_DATA to the data directory of war1gus")
@@ -50,11 +53,9 @@ add_custom_command(OUTPUT ${CONVERSION_TOOLS}
 
 add_custom_command(OUTPUT ${RESOURCES}
                    DEPENDS ${CONVERSION_TOOLS}
-                   COMMAND python3
-                   ARGS ${PROJECT_SOURCE_DIR}/extract_data.py --data ${WAR1GUS_DATA} --output ${RESOURCES} --prefix ${PROJECT_BINARY_DIR}
+                   COMMAND python3 ${PROJECT_SOURCE_DIR}/extract_data.py --data ${WAR1GUS_DATA} --output resources --prefix ${PROJECT_BINARY_DIR}
                    COMMENT "Converting graphics"
                    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                   MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/extract_data.py
                    VERBATIM)
 
 set(SOURCES ${C_SOURCES} ${HEADERS} ${RESOURCES})

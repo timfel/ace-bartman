@@ -210,8 +210,8 @@ TILESETS = {}
 
 
 def system(s):
+    print("Running", s, flush=True)
     code = os.system(s)
-    print("Running", s)
     if code != 0:
         print("ERROR")
         sys.exit(code)
@@ -251,6 +251,7 @@ def spritesheets(out, bindir):
             pngfiles.append(inputfiles[-1].replace(".bmp", ""))
             bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
             with open(inputfiles[-1], "wb") as f:
+                print(inputfiles[-1])
                 Spritesheet(ARCHIVE, ARCHIVE[v], tileset.palette).write(f)
 
         inargs = " -i ".join(inputfiles)
