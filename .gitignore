@@ -4,3 +4,7 @@ rom.key
 *.adf
 resources/
 DATA.WAR
+*.c.*.idx
+*.cpp.*.idx
+*.h.*.idx
+*.pyc
