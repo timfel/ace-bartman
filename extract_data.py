@@ -242,7 +242,10 @@ def spritesheets(out, bindir):
     tileset_conv = os.path.join(bindir, 'tileset_conv')
     palette_conv = os.path.join(bindir, 'palette_conv')
     w_h_re = re.compile(r"PNG (\d+)x(\d+) ")
-    transparency = r'\#FF00FF'
+    if os.name == 'nt':
+        transparency = r"" # not working on windows?
+    else:
+        transparency = r'-mc \#FF00FF'
 
     for name, tileset in TILESETS.items():
         os.makedirs(os.path.join(imgdir, name), exist_ok=True)
@@ -258,7 +261,7 @@ def spritesheets(out, bindir):
 
         for k,v in MAP_SPRITESHEETS.items():
             inputfiles.append(f"{os.path.join(imgdir, name, k)}.bmp")
-            pngfiles.append(inputfiles[-1].replace(".bmp", ""))
+            pngfiles.append(inputfiles[-1].replace(".bmp", ".amiga"))
             bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
             with open(inputfiles[-1], "wb") as f:
                 print(inputfiles[-1])
@@ -290,7 +293,7 @@ def spritesheets(out, bindir):
                     add_right = math.ceil((16 - w) / 2)
                     system(f"{convert} {pngfile}.png -gravity East -background {transparency} -splice {add_left}x0 +repage {pngfile}.png")
                     system(f"{convert} {pngfile}.png -gravity West -background {transparency} -splice {add_right}x0 +repage {pngfile}.png")
-            system(f"{bitmap_conv} {palette} {pngfile}.png -o {bmfile} -mc {transparency}")
+            system(f"{bitmap_conv} {palette} {pngfile}.png -o {bmfile} {transparency}")
 
         # first one is the tileset
         system(f"{tileset_conv} {pngfiles[0]}.png {Tileset.TILE_SIZE} {bmfiles[0]} -plt {palette}")
