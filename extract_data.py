@@ -229,7 +229,7 @@ def spritesheets(out, bindir):
 
     rgb2amiga = os.path.join(bindir, 'Rgb2Amiga')
     convert = os.path.join(bindir, 'convert')
-    if not os.path.exist(convert):
+    if not os.path.exists(convert):
         convert = "convert"
     bitmap_conv = os.path.join(bindir, 'bitmap_conv')
     tileset_conv = os.path.join(bindir, 'tileset_conv')
