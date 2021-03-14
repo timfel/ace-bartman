@@ -230,11 +230,18 @@ def spritesheets(out, bindir):
     rgb2amiga = os.path.join(bindir, 'Rgb2Amiga')
     convert = os.path.join(bindir, 'convert')
     if not os.path.exists(convert):
-        convert = "convert"
+        convert += ".exe"
+        if not os.path.exists(convert):
+            convert = "convert"
+    identify = os.path.join(bindir, 'identify')
+    if not os.path.exists(identify):
+        identify += ".exe"
+        if not os.path.exists(identify):
+            identify = "identify"
     bitmap_conv = os.path.join(bindir, 'bitmap_conv')
     tileset_conv = os.path.join(bindir, 'tileset_conv')
     palette_conv = os.path.join(bindir, 'palette_conv')
-    w_h_re = re.compile(r"PNG image data, (\d+) x (\d+),")
+    w_h_re = re.compile(r"PNG (\d+)x(\d+) ")
     transparency = r'\#FF00FF'
 
     for name, tileset in TILESETS.items():
@@ -244,7 +251,7 @@ def spritesheets(out, bindir):
         bmfiles = []
 
         inputfiles.append(f"{os.path.join(imgdir, name)}.bmp")
-        pngfiles.append(inputfiles[-1].replace(".bmp", ""))
+        pngfiles.append(inputfiles[-1].replace(".bmp", ".amiga"))
         bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
         with open(inputfiles[-1], "wb") as f:
             tileset.write(f)
@@ -257,13 +264,20 @@ def spritesheets(out, bindir):
                 print(inputfiles[-1])
                 Spritesheet(ARCHIVE, ARCHIVE[v], tileset.palette).write(f)
 
+        if os.name == "nt":
+            # hack for windows filesize problem (?)
+            for idx, img in enumerate(inputfiles):
+                newname = img.replace('bmp', 'png')
+                os.system(f"{convert} {img} {newname}") # ignore error
+                inputfiles[idx] = newname
+
         inargs = " -i ".join(inputfiles)
         outargs = " -o ".join(pngfiles)
         system(f"{rgb2amiga} -c 32 -f png-gpl -s ! -i {inargs} -o {outargs}")
         palette = os.path.join(imgdir, f"{name.lower()}.plt")
         system(f"{palette_conv} {pngfiles[0]}.gpl {palette}")
         for bmfile,pngfile in zip(bmfiles, pngfiles):
-            info = subprocess.check_output(f"file {pngfile}.png", shell=True).decode()
+            info = subprocess.check_output(f"{identify} {pngfile}.png", shell=True).decode()
             w, h = (int(x) for x in w_h_re.search(info).groups())
             if w % 16:
                 if w > 16:

@@ -65,9 +65,9 @@ if(USE_WIN32)
        endif()
        add_custom_command(OUTPUT ${CONVERSION_TOOLS}
                      COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR}/ace_tools_build
-                     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/ACE/tools/bin/tileset_conv.exe ${PROJECT_BINARY_DIR}/tools/tileset_conv.exe
-                     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/ACE/tools/bin/bitmap_conv.exe ${PROJECT_BINARY_DIR}/tools/bitmap_conv.exe
-                     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/ACE/tools/bin/palette_conv.exe ${PROJECT_BINARY_DIR}/tools/palette_conv.exe
+                     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/ACE/tools/bin/Debug/tileset_conv.exe ${PROJECT_BINARY_DIR}/tools/tileset_conv.exe
+                     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/ACE/tools/bin/Debug/bitmap_conv.exe ${PROJECT_BINARY_DIR}/tools/bitmap_conv.exe
+                     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/deps/ACE/tools/bin/Debug/palette_conv.exe ${PROJECT_BINARY_DIR}/tools/palette_conv.exe
                      COMMENT "Building tools"
                      VERBATIM)
 else()
@@ -98,12 +98,6 @@ add_custom_command(OUTPUT ${RESOURCES}
                    COMMENT "Converting graphics"
                    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                    VERBATIM)
-
-if (USE_WIN32)
-       if(NOT EXISTS ${PROJECT_BINARY_DIR}/resources)
-              message(FATAL_ERROR "Extraction of resources needs to be done on by building Linux once and then they need to remain in ${PROJECT_BINARY_DIR}/resources")
-       endif()
-endif()
 
 set(SOURCES ${C_SOURCES} ${HEADERS} ${RESOURCES})
 
