@@ -228,6 +228,9 @@ def spritesheets(out, bindir):
     os.makedirs(imgdir, exist_ok=True)
 
     rgb2amiga = os.path.join(bindir, 'Rgb2Amiga')
+    convert = os.path.join(bindir, 'convert')
+    if not os.path.exist(convert):
+        convert = "convert"
     bitmap_conv = os.path.join(bindir, 'bitmap_conv')
     tileset_conv = os.path.join(bindir, 'tileset_conv')
     palette_conv = os.path.join(bindir, 'palette_conv')
@@ -266,13 +269,13 @@ def spritesheets(out, bindir):
                 if w > 16:
                     crop_left = math.floor((w % 16) / 2)
                     crop_right = math.ceil((w % 16) / 2)
-                    system(f"convert {pngfile}.png -gravity East -crop {w - crop_left}x{h}+0+0 +repage {pngfile}.png")
-                    system(f"convert {pngfile}.png -gravity West -crop {w - crop_left - crop_right}x{h}+0+0 +repage {pngfile}.png")
+                    system(f"{convert} {pngfile}.png -gravity East -crop {w - crop_left}x{h}+0+0 +repage {pngfile}.png")
+                    system(f"{convert} {pngfile}.png -gravity West -crop {w - crop_left - crop_right}x{h}+0+0 +repage {pngfile}.png")
                 else:
                     add_left = math.floor((16 - w) / 2)
                     add_right = math.ceil((16 - w) / 2)
-                    system(f"convert {pngfile}.png -gravity East -background {transparency} -splice {add_left}x0 +repage {pngfile}.png")
-                    system(f"convert {pngfile}.png -gravity West -background {transparency} -splice {add_right}x0 +repage {pngfile}.png")
+                    system(f"{convert} {pngfile}.png -gravity East -background {transparency} -splice {add_left}x0 +repage {pngfile}.png")
+                    system(f"{convert} {pngfile}.png -gravity West -background {transparency} -splice {add_right}x0 +repage {pngfile}.png")
             system(f"{bitmap_conv} {palette} {pngfile}.png -o {bmfile} -mc {transparency}")
 
         # first one is the tileset
