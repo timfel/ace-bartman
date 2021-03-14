@@ -92,13 +92,18 @@ else()
               VERBATIM)
 endif()
 
-
 add_custom_command(OUTPUT ${RESOURCES}
                    DEPENDS ${CONVERSION_TOOLS}
                    COMMAND python3 ${PROJECT_SOURCE_DIR}/extract_data.py --data ${WAR1_DATA} --output resources --prefix ${PROJECT_BINARY_DIR}/tools
                    COMMENT "Converting graphics"
                    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                    VERBATIM)
+
+if (USE_WIN32)
+       if(NOT EXISTS ${PROJECT_BINARY_DIR}/resources)
+              message(FATAL_ERROR "Extraction of resources needs to be done on by building Linux once and then they need to remain in ${PROJECT_BINARY_DIR}/resources")
+       endif()
+endif()
 
 set(SOURCES ${C_SOURCES} ${HEADERS} ${RESOURCES})
 
