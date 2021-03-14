@@ -42,10 +42,10 @@ endif()
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools)
 if(USE_WIN32)
        set(CONVERSION_TOOLS
-              ${PROJECT_BINARY_DIR}/Rgb2Amiga.exe
-              ${PROJECT_BINARY_DIR}/tileset_conv.exe
-              ${PROJECT_BINARY_DIR}/bitmap_conv.exe
-              ${PROJECT_BINARY_DIR}/palette_conv.exe)
+              ${PROJECT_BINARY_DIR}/tools/Rgb2Amiga.exe
+              ${PROJECT_BINARY_DIR}/tools/tileset_conv.exe
+              ${PROJECT_BINARY_DIR}/tools/bitmap_conv.exe
+              ${PROJECT_BINARY_DIR}/tools/palette_conv.exe)
        # just download prebuilt rgb2amiga on windows, it's annoying to have to build imagemagick
        execute_process(
                      COMMAND ${CMAKE_COMMAND} -S ${PROJECT_SOURCE_DIR}/deps/ACE/tools -B ${PROJECT_BINARY_DIR}/ace_tools_build
