@@ -104,7 +104,7 @@ void loadMap(const char* race, uint8_t index) {
                                     TAG_TILEBUFFER_TILE_SHIFT, TILE_SHIFT,
                                     TAG_TILEBUFFER_TILESET, s_pMapBitmap,
                                     TAG_TILEBUFFER_IS_DBLBUF, 0,
-                                    TAG_TILEBUFFER_REDRAW_QUEUE_LENGTH, 9,
+                                    TAG_TILEBUFFER_REDRAW_QUEUE_LENGTH, 6,
                                     TAG_TILEBUFFER_COPLIST_OFFSET_START, tileStartPos,
                                     TAG_TILEBUFFER_COPLIST_OFFSET_BREAK, tileBreakPos,
                                     TAG_END);
@@ -173,16 +173,16 @@ void gameGsLoop(void) {
     case 0:
         // This will loop every frame
         if (keyCheck(KEY_W)) {
-            cameraMoveBy(s_pMainCamera, 0, -5);
+            cameraMoveBy(s_pMainCamera, 0, -4);
         }
         if (keyCheck(KEY_S)) {
-            cameraMoveBy(s_pMainCamera, 0, 5);
+            cameraMoveBy(s_pMainCamera, 0, 4);
         }
         if (keyCheck(KEY_A)) {
-            cameraMoveBy(s_pMainCamera, -5, 0);
+            cameraMoveBy(s_pMainCamera, -4, 0);
         }
         if (keyCheck(KEY_D)) {
-            cameraMoveBy(s_pMainCamera, 5, 0);
+            cameraMoveBy(s_pMainCamera, 4, 0);
         }
         if (keyCheck(KEY_ESCAPE)) {
             gameExit();
