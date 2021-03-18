@@ -36,7 +36,6 @@ static tCameraManager *s_pMainCamera;
 static tBitMap *s_pMapBitmap;
 
 static tBitMap *s_pGoldMineBitmap;
-static tBitMap *s_pGoldMineMask;
 static tBobNew s_GoldMineBob;
 
 // palette switching
@@ -98,7 +97,7 @@ void loadMap(const char* race, uint8_t index) {
     s_pMapBitmap = bitmapCreateFromFile(imgname, 0);
     s_pMapBuffer = tileBufferCreate(0,
                                     TAG_TILEBUFFER_VPORT, s_pVpMain,
-                                    TAG_TILEBUFFER_BITMAP_FLAGS, BMF_CLEAR,
+                                    TAG_TILEBUFFER_BITMAP_FLAGS, BMF_CLEAR | BMF_INTERLEAVED,
                                     TAG_TILEBUFFER_BOUND_TILE_X, MAP_SIZE,
                                     TAG_TILEBUFFER_BOUND_TILE_Y, MAP_SIZE,
                                     TAG_TILEBUFFER_TILE_SHIFT, TILE_SHIFT,
@@ -120,6 +119,16 @@ void loadMap(const char* race, uint8_t index) {
     tileBufferRedrawAll(s_pMapBuffer);
 }
 
+void loadGoldmine(void) {
+    bobNewManagerCreate(s_pMapBuffer->pScroll->pBack, s_pMapBuffer->pScroll->pBack, s_pMapBuffer->pScroll->uwBmAvailHeight);
+
+    s_pGoldMineBitmap = bitmapCreateFromFile("resources/imgs/for/neutral_gold_mine.bm", 0);
+    bobNewInit(&s_GoldMineBob, 64, 48, 0, s_pGoldMineBitmap, 0, 0, 0);
+    bobNewSetBitMapOffset(&s_GoldMineBob, 0);
+
+    bobNewReallocateBgBuffers();
+}
+
 void gameGsCreate(void) {
     viewLoad(0);
 
@@ -135,7 +144,9 @@ void gameGsCreate(void) {
                          TAG_VIEW_COPLIST_RAW_COUNT, copListLength,
                          TAG_DONE);
 
-    loadMap("human", 12);
+    loadMap("orc", 12);
+
+    loadGoldmine();
 
     // create panel area
     // paletteLoad("resources/human_panel.plt", s_pPanelPalette, COLORS);
@@ -157,7 +168,7 @@ void gameGsCreate(void) {
     logWrite("create panel buffer\n");
     s_pPanelBuffer = simpleBufferCreate(0,
                                         TAG_SIMPLEBUFFER_VPORT, s_pVpPanel,
-                                        TAG_SIMPLEBUFFER_BITMAP_FLAGS, BMF_CLEAR,
+                                        TAG_SIMPLEBUFFER_BITMAP_FLAGS, BMF_CLEAR | BMF_INTERLEAVED,
                                         TAG_SIMPLEBUFFER_COPLIST_OFFSET, simplePos,
                                         TAG_END);
     // bitmapLoadFromFile(s_pPanelBuffer->pFront, "resources/human_panel/graphics/ui/human/panel_2.bm", 48, 0);
@@ -201,17 +212,18 @@ void gameGsLoop(void) {
         }
     }
 
-    // bobNewBegin(s_pMapBuffer->pScroll->pBack);
+    bobNewBegin(s_pMapBuffer->pScroll->pBack);
     // if (tileBufferIsTileOnBuffer(s_pMapBuffer, 80 / 16, 80 / 16)) {
-    //     bobNewPush(&s_GoldMineBob);
+    bobNewPush(&s_GoldMineBob);
     // }
-    // bobNewPushingDone();
-    // bobNewProcessNext();
-    // bobNewEnd();
+    bobNewPushingDone();
+    bobNewProcessNext();
+    bobNewEnd();
 
     viewProcessManagers(s_pView);
     copProcessBlocks();
     vPortWaitForEnd(s_pVpPanel);
+
     GameCycle++;
 }
 

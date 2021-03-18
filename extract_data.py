@@ -275,8 +275,10 @@ def spritesheets(out, bindir):
             tileset.write(f)
 
         for k,v in MAP_SPRITESHEETS.items():
+            print(k)
             if isinstance(v, dict):
                 chunk_idx = v["chunk"]
+                v = dict(v)
                 del v["chunk"]
             else:
                 chunk_idx = v
@@ -285,7 +287,6 @@ def spritesheets(out, bindir):
             pngfiles.append(inputfiles[-1].replace(".bmp", ".amiga"))
             bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
             with open(inputfiles[-1], "wb") as f:
-                print(inputfiles[-1])
                 Spritesheet(ARCHIVE, ARCHIVE[chunk_idx], tileset.palette, **v).write(f)
 
         if os.name == "nt":
