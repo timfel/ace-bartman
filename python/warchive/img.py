@@ -1,3 +1,4 @@
+import math
 import os
 
 
@@ -68,47 +69,113 @@ class Spritesheet(Image):
                 frames[i - 1] = Frame(*frames[:-1], chunk[lasto:frame_offset_in_chunk])
         frames.append((xoff, yoff, w, h, frame_offset_in_chunk))
 
-    def __init__(self, archive, chunk, palette):
+    def __init__(self, archive, chunk, palette, remove_frames=None, color_mapping=None,
+                    bg_color_idx=0, max_w=None, max_h=None):
         self.archive = archive
         self.chunk = chunk.copy()
         self.palette = palette
+        self.remove_frames = []
+        self.color_mapping = color_mapping or (lambda c: c)
+        self.bg_color_idx = bg_color_idx
+        self.max_w = max_w
+        self.max_h = max_h
+        if remove_frames:
+            for r in remove_frames:
+                if isinstance(r, int):
+                    self.remove_frames.append(r)
+                elif isinstance(r, range):
+                    self.remove_frames += list(r)
+                else:
+                    raise TypeError("remove frames list must contain ints or ranges")
 
-    def extract(self):
+    def extract(self, max_w=None, max_h=None):
+        """Extract the spritesheet into a bitmap.
+
+        The frame and colormappings are taken into account. When max_w and max_h
+        are given, these are honored. If not, they are determined from the actual
+        available space around the non-removed frames. If a background color index
+        is configured, that one is used instead of any pixel that would have index
+        0 (the transparent color).
+        """
+        chunk = self.chunk.copy()
         palette = Palette(self.archive, self.palette).get_rgb_array()
-        numframes = self.chunk.read16()
-        max_w = self.chunk.read8()
-        max_h = self.chunk.read8()
+        numframes = chunk.read16()
+        max_w = max_w or self.max_w
+        max_h = max_h or self.max_h
+        if max_w:
+            orig_max_w = chunk.read8()
+            detected_max_w = 0xFFFF
+        else:
+            orig_max_w = max_w = chunk.read8()
+            detected_max_w = 0
+        if max_h:
+            orig_max_h = chunk.read8()
+            detected_max_h = 0xFFFF
+        else:
+            orig_max_h = max_h = chunk.read8()
+            detected_max_h = 0
         frames = []
 
-        image = memoryview(bytearray(bytearray([0]) * max_w * max_h * numframes))
+        image = memoryview(bytearray(bytearray([self.bg_color_idx]) * max_w * max_h * numframes))
         # index 0 is used for transparency in these spritesheets
-        palette[0:3] = Palette.TRANSPARENCY
-        chunkstart = self.chunk.tell()
+        if self.bg_color_idx == 0:
+            palette[0:3] = Palette.TRANSPARENCY
+        else:
+            # we don't use transparency, there's a custom bg color
+            palette[0:3] = palette[self.bg_color_idx * 3:self.bg_color_idx * 3 + 3]
+        chunkstart = chunk.tell()
 
         # we're always saving as vertical framesheet. One long shift down and
         # then continuous read is better
 
-        for i in range(numframes):
-            xoff = self.chunk.read8()
-            yoff = self.chunk.read8()
-            framew = self.chunk.read8()
-            frameh = self.chunk.read8()
-            fileoffset = self.chunk.read32()
+        i = 0
+        for framenum in range(numframes):
+            xoff = chunk.read8()
+            yoff = chunk.read8()
+            framew = chunk.read8()
+            frameh = chunk.read8()
+            fileoffset = chunk.read32()
+
+            if framenum in self.remove_frames:
+                continue
 
             if fileoffset & 0x80000000:
                 # high bit is set
                 fileoffset &= 0x7FFFFFFF
                 framew += 256
 
+            xoff -= (orig_max_w - max_w) // 2
+            yoff -= (orig_max_h - max_h) // 2
+
             # TODO: support or at least detect and fail on compressed images
-
             dest_pixel = max_h * max_w * i + xoff + yoff * max_w
-            source = self.chunk[chunkstart + fileoffset - 4:].memory()
-            for src_pixel in range(0, frameh * framew, framew):
-                image[dest_pixel:dest_pixel + framew] = source[src_pixel:src_pixel + framew]
-                dest_pixel += max_w
+            source = chunk[chunkstart + fileoffset - 4:].memory()
+            src_pixel = 0
+            last_x_with_color = 0
+            last_y_with_color = 0
+            for y in range(0, frameh):
+                for x in range(0, framew):
+                    px = self.color_mapping(source[src_pixel])
+                    image[dest_pixel] = px
+                    if px != self.bg_color_idx:
+                        last_x_with_color = max(last_x_with_color, x)
+                        last_y_with_color = max(last_y_with_color, y)
+                    dest_pixel += 1
+                    src_pixel += 1
+                dest_pixel += (max_w - framew)
+            i += 1
 
-        return Bitmap(max_w, max_h * numframes, image, rgb_palette=palette)
+            detected_max_w = max(detected_max_w, (last_x_with_color + xoff / 2))
+            detected_max_h = max(detected_max_h, (last_y_with_color + yoff / 2))
+
+        detected_max_h = math.ceil(detected_max_h / 16) * 16
+        detected_max_w = math.ceil(detected_max_w / 16) * 16
+        if detected_max_h < max_h or detected_max_w < max_w:
+            # there's enough space around the (remaining) frames to put them closer together
+            print("Cropping frames from", (max_w, max_h), "to", (detected_max_w, detected_max_h))
+            return self.extract(max_w=detected_max_w, max_h=detected_max_h)
+        else:
+            return Bitmap(max_w, max_h * i, image, rgb_palette=palette)
 
     def write(self, f):
         self.extract().write(f)

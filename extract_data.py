@@ -11,7 +11,7 @@ except ImportError:
     from warchive.archive import WarArchive
 
 
-from warchive.img import Tileset, Spritesheet
+from warchive.img import Tileset, Spritesheet, Palette
 
 
 CAMPAIGN_MAPS_START_IDX = 117
@@ -99,19 +99,28 @@ MAPPED_TILES = {
 
 
 MAP_SPRITESHEETS = {
-    "human_footman": 279,
+    # to conserve memory, we remove a lot of frames, leaving mostly only
+    # the standing, walking frame, and attacking frames. death frames are shared
+    # across most members of a race, except for catapult
+    "human_footman": {"chunk": 279, "remove_frames": [range(5, 35), range(40, 100)]},
     "orc_grunt": 280,
     "human_peasant": 281,
     "orc_peon": 282,
-    "human_catapult": 283,
-    "orc_catapult": 284,
+    "catapult": {
+        "chunk": 284,
+        "remove_frames": [range(5, 35), range(45, 100)],
+        # we use the same catapult sprites, and just map the faction color to gray
+        "color_mapping": (lambda c: c + 8 if c in range(176, 184) else c),
+	},
+    # "human_catapult": 283,
+    # "orc_catapult": 284,
     "human_knight": 285,
     "orc_raider": 286,
-    "human_archer": 287,
+    "human_archer": {"chunk": 287, "remove_frames": [range(5, 30), range(35, 100)]},
     "orc_spearman": 288,
-    "human_conjurer": 289,
+    "human_conjurer": {"chunk": 289, "remove_frames": [range(5, 45), range(50, 100)]},
     "orc_warlock": 290,
-    "human_cleric": 291,
+    "human_cleric": {"chunk": 291, "remove_frames": [range(5, 45), range(50, 100)], "max_w": 16},
     "orc_necrolyte": 292,
     "human_medivh": 293,
     "human_lothar": 294,
@@ -128,8 +137,10 @@ MAP_SPRITESHEETS = {
     "neutral_daemon": 305,
     "neutral_water_elemental": 306,
     "neutral_dead_bodies": 326,
-    "human_peasant_with_wood": 327,
-    "orc_peon_with_wood": 328,
+    ## Another space saving measure, any resource
+    ## carrying is the same spritesheet
+    # "human_peasant_with_wood": 327,
+    # "orc_peon_with_wood": 328,
     "human_peasant_with_gold": 329,
     "orc_peon_with_gold": 330,
 
@@ -146,41 +157,44 @@ MAP_SPRITESHEETS = {
     # "missile_water_elemental_projectile": 217, 357,
     "missile_fireball_2": 358,
 
-    "human_farm": 307,
-    "orc_farm": 308,
-    "human_barracks": 309,
-    "orc_barracks": 310,
-    "human_church": 311,
-    "orc_temple": 312,
-    "human_tower": 313,
-    "orc_tower": 314,
-    "human_town_hall": 315,
-    "orc_town_hall": 316,
-    "human_lumber_mill": 317,
-    "orc_lumber_mill": 318,
-    "human_stable": 319,
-    "orc_kennel": 320,
-    "human_blacksmith": 321,
-    "orc_blacksmith": 322,
-    "human_stormwind_keep": 323,
-    "orc_blackrock_spire": 324,
-    "neutral_gold_mine": 325,
-    "human_farm_construction": 331,
-    "orc_farm_construction": 332,
-    "human_barracks_construction": 333,
-    "orc_barracks_construction": 334,
-    "human_church_construction": 335,
-    "orc_temple_construction": 336,
-    "human_tower_construction": 337,
-    "orc_tower_construction": 338,
-    "human_town_hall_construction": 339,
-    "orc_town_hall_construction": 340,
-    "human_lumber_mill_construction": 341,
-    "orc_lumber_mill_construction": 342,
-    "human_stable_construction": 343,
-    "orc_kennel_construction": 344,
-    "human_blacksmith_construction": 345,
-    "orc_blacksmith_construction": 346,
+    "human_farm": {"chunk": 307, "bg_color_idx": 171},
+    "orc_farm": {"chunk": 308, "bg_color_idx": 171},
+    "human_barracks": {"chunk": 309, "bg_color_idx": 171},
+    "orc_barracks": {"chunk": 310, "bg_color_idx": 171},
+    "human_church": {"chunk": 311, "bg_color_idx": 171},
+    "orc_temple": {"chunk": 312, "bg_color_idx": 171},
+    "human_tower": {"chunk": 313, "bg_color_idx": 171},
+    "orc_tower": {"chunk": 314, "bg_color_idx": 171},
+    "human_town_hall": {"chunk": 315, "bg_color_idx": 171},
+    "orc_town_hall": {"chunk": 316, "bg_color_idx": 171},
+    "human_lumber_mill": {"chunk": 317, "bg_color_idx": 171},
+    "orc_lumber_mill": {"chunk": 318, "bg_color_idx": 171},
+    "human_stable": {"chunk": 319, "bg_color_idx": 171},
+    "orc_kennel": {"chunk": 320, "bg_color_idx": 171},
+    "human_blacksmith": {"chunk": 321, "bg_color_idx": 171},
+    "orc_blacksmith": {"chunk": 322, "bg_color_idx": 171},
+    "human_stormwind_keep": {"chunk": 323, "bg_color_idx": 171},
+    "orc_blackrock_spire": {"chunk": 324, "bg_color_idx": 171},
+    "neutral_gold_mine": {"chunk": 325, "bg_color_idx": 171},
+    ## We do not include the constructions, instead we
+    ## do a similar thing as The Settlers, just drawing a
+    ## part of the unfinished building, to conserver memory
+    # "human_farm_construction": 331,
+    # "orc_farm_construction": 332,
+    # "human_barracks_construction": 333,
+    # "orc_barracks_construction": 334,
+    # "human_church_construction": 335,
+    # "orc_temple_construction": 336,
+    # "human_tower_construction": 337,
+    # "orc_tower_construction": 338,
+    # "human_town_hall_construction": 339,
+    # "orc_town_hall_construction": 340,
+    # "human_lumber_mill_construction": 341,
+    # "orc_lumber_mill_construction": 342,
+    # "human_stable_construction": 343,
+    # "orc_kennel_construction": 344,
+    # "human_blacksmith_construction": 345,
+    # "orc_blacksmith_construction": 346,
 }
 
 
@@ -244,6 +258,7 @@ def spritesheets(out, bindir):
     w_h_re = re.compile(r"PNG (\d+)x(\d+) ")
     if os.name == 'nt':
         transparency = r"" # not working on windows?
+        Palette.TRANSPARENCY = [0, 0, 0] # make it black, if we don't mask it
     else:
         transparency = r'-mc \#FF00FF'
 
@@ -260,12 +275,18 @@ def spritesheets(out, bindir):
             tileset.write(f)
 
         for k,v in MAP_SPRITESHEETS.items():
+            if isinstance(v, dict):
+                chunk_idx = v["chunk"]
+                del v["chunk"]
+            else:
+                chunk_idx = v
+                v = {}
             inputfiles.append(f"{os.path.join(imgdir, name, k)}.bmp")
             pngfiles.append(inputfiles[-1].replace(".bmp", ".amiga"))
             bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
             with open(inputfiles[-1], "wb") as f:
                 print(inputfiles[-1])
-                Spritesheet(ARCHIVE, ARCHIVE[v], tileset.palette).write(f)
+                Spritesheet(ARCHIVE, ARCHIVE[chunk_idx], tileset.palette, **v).write(f)
 
         if os.name == "nt":
             # hack for windows filesize problem (?)
@@ -293,10 +314,10 @@ def spritesheets(out, bindir):
                     add_right = math.ceil((16 - w) / 2)
                     system(f"{convert} {pngfile}.png -gravity East -background {transparency} -splice {add_left}x0 +repage {pngfile}.png")
                     system(f"{convert} {pngfile}.png -gravity West -background {transparency} -splice {add_right}x0 +repage {pngfile}.png")
-            system(f"{bitmap_conv} {palette} {pngfile}.png -o {bmfile} {transparency}")
+            system(f"{bitmap_conv} {palette} {pngfile}.png -o {bmfile} -i {transparency}")
 
         # first one is the tileset
-        system(f"{tileset_conv} {pngfiles[0]}.png {Tileset.TILE_SIZE} {bmfiles[0]} -plt {palette}")
+        system(f"{tileset_conv} {pngfiles[0]}.png {Tileset.TILE_SIZE} {bmfiles[0]} -i -plt {palette}")
 
 
 
