@@ -123,7 +123,7 @@ void loadGoldmine(void) {
     bobNewManagerCreate(s_pMapBuffer->pScroll->pBack, s_pMapBuffer->pScroll->pBack, s_pMapBuffer->pScroll->uwBmAvailHeight);
 
     s_pGoldMineBitmap = bitmapCreateFromFile("resources/imgs/for/neutral_gold_mine.bm", 0);
-    bobNewInit(&s_GoldMineBob, 64, 48, 0, s_pGoldMineBitmap, 0, 0, 0);
+    bobNewInit(&s_GoldMineBob, 64, 48, 0, s_pGoldMineBitmap, 0, 120, 120);
     bobNewSetBitMapOffset(&s_GoldMineBob, 0);
 
     bobNewReallocateBgBuffers();
