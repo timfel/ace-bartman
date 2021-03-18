@@ -157,25 +157,25 @@ MAP_SPRITESHEETS = {
     # "missile_water_elemental_projectile": 217, 357,
     "missile_fireball_2": 358,
 
-    "human_farm": {"chunk": 307, "bg_color_idx": 171},
-    "orc_farm": {"chunk": 308, "bg_color_idx": 171},
-    "human_barracks": {"chunk": 309, "bg_color_idx": 171},
-    "orc_barracks": {"chunk": 310, "bg_color_idx": 171},
-    "human_church": {"chunk": 311, "bg_color_idx": 171},
-    "orc_temple": {"chunk": 312, "bg_color_idx": 171},
-    "human_tower": {"chunk": 313, "bg_color_idx": 171},
-    "orc_tower": {"chunk": 314, "bg_color_idx": 171},
-    "human_town_hall": {"chunk": 315, "bg_color_idx": 171},
-    "orc_town_hall": {"chunk": 316, "bg_color_idx": 171},
-    "human_lumber_mill": {"chunk": 317, "bg_color_idx": 171},
-    "orc_lumber_mill": {"chunk": 318, "bg_color_idx": 171},
-    "human_stable": {"chunk": 319, "bg_color_idx": 171},
-    "orc_kennel": {"chunk": 320, "bg_color_idx": 171},
-    "human_blacksmith": {"chunk": 321, "bg_color_idx": 171},
-    "orc_blacksmith": {"chunk": 322, "bg_color_idx": 171},
-    "human_stormwind_keep": {"chunk": 323, "bg_color_idx": 171},
-    "orc_blackrock_spire": {"chunk": 324, "bg_color_idx": 171},
-    "neutral_gold_mine": {"chunk": 325, "bg_color_idx": 171},
+    "human_farm": {"chunk": 307, "bg_color_idx": 75},
+    "orc_farm": {"chunk": 308, "bg_color_idx": 75},
+    "human_barracks": {"chunk": 309, "bg_color_idx": 75},
+    "orc_barracks": {"chunk": 310, "bg_color_idx": 75},
+    "human_church": {"chunk": 311, "bg_color_idx": 75},
+    "orc_temple": {"chunk": 312, "bg_color_idx": 75},
+    "human_tower": {"chunk": 313, "bg_color_idx": 75},
+    "orc_tower": {"chunk": 314, "bg_color_idx": 75},
+    "human_town_hall": {"chunk": 315, "bg_color_idx": 75},
+    "orc_town_hall": {"chunk": 316, "bg_color_idx": 75},
+    "human_lumber_mill": {"chunk": 317, "bg_color_idx": 75},
+    "orc_lumber_mill": {"chunk": 318, "bg_color_idx": 75},
+    "human_stable": {"chunk": 319, "bg_color_idx": 75},
+    "orc_kennel": {"chunk": 320, "bg_color_idx": 75},
+    "human_blacksmith": {"chunk": 321, "bg_color_idx": 75},
+    "orc_blacksmith": {"chunk": 322, "bg_color_idx": 75},
+    "human_stormwind_keep": {"chunk": 323, "bg_color_idx": 75},
+    "orc_blackrock_spire": {"chunk": 324, "bg_color_idx": 75},
+    "neutral_gold_mine": {"chunk": 325, "bg_color_idx": 75},
     ## We do not include the constructions, instead we
     ## do a similar thing as The Settlers, just drawing a
     ## part of the unfinished building, to conserver memory
@@ -223,6 +223,11 @@ DATA = {
 TILESETS = {}
 
 
+def remove(filename):
+    if True:
+        os.unlink(filename)
+
+
 def system(s):
     print("Running", s, flush=True)
     code = os.system(s)
@@ -264,10 +269,12 @@ def spritesheets(out, bindir):
 
     for name, tileset in TILESETS.items():
         os.makedirs(os.path.join(imgdir, name), exist_ok=True)
+        names = []
         inputfiles = []
         pngfiles = []
         bmfiles = []
 
+        names.append(name)
         inputfiles.append(f"{os.path.join(imgdir, name)}.bmp")
         pngfiles.append(inputfiles[-1].replace(".bmp", ".amiga"))
         bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
@@ -283,6 +290,7 @@ def spritesheets(out, bindir):
             else:
                 chunk_idx = v
                 v = {}
+            names.append(k)
             inputfiles.append(f"{os.path.join(imgdir, name, k)}.bmp")
             pngfiles.append(inputfiles[-1].replace(".bmp", ".amiga"))
             bmfiles.append(inputfiles[-1].replace(".bmp", ".bm"))
@@ -294,14 +302,18 @@ def spritesheets(out, bindir):
             for idx, img in enumerate(inputfiles):
                 newname = img.replace('bmp', 'png')
                 os.system(f"{convert} {img} {newname}") # ignore error
+                remove(img)
                 inputfiles[idx] = newname
 
         inargs = " -i ".join(inputfiles)
         outargs = " -o ".join(pngfiles)
         system(f"{rgb2amiga} -c 32 -f png-gpl -s ! -i {inargs} -o {outargs}")
+        for inputfile in inputfiles:
+            remove(inputfile)
         palette = os.path.join(imgdir, f"{name.lower()}.plt")
         system(f"{palette_conv} {pngfiles[0]}.gpl {palette}")
-        for bmfile,pngfile in zip(bmfiles, pngfiles):
+        remove(f"{pngfiles[0]}.gpl")
+        for name,bmfile,pngfile in zip(names[1:], bmfiles[1:], pngfiles[1:]): # skip first, that's the tileset
             info = subprocess.check_output(f"{identify} {pngfile}.png", shell=True).decode()
             w, h = (int(x) for x in w_h_re.search(info).groups())
             if w % 16:
@@ -316,10 +328,16 @@ def spritesheets(out, bindir):
                     system(f"{convert} {pngfile}.png -gravity East -background {transparency} -splice {add_left}x0 +repage {pngfile}.png")
                     system(f"{convert} {pngfile}.png -gravity West -background {transparency} -splice {add_right}x0 +repage {pngfile}.png")
             system(f"{bitmap_conv} {palette} {pngfile}.png -o {bmfile} -i {transparency}")
+            remove(f"{pngfile}.png")
+            v = MAP_SPRITESHEETS[name]
+            if isinstance(v, dict) and "bg_color_idx" in v:
+                try:
+                    remove(bmfile.replace(".bm", "_mask.bm"))
+                except FileNotFoundError:
+                    pass
 
-        # first one is the tileset
         system(f"{tileset_conv} {pngfiles[0]}.png {Tileset.TILE_SIZE} {bmfiles[0]} -i -plt {palette}")
-
+        remove(f"{pngfiles[0]}.png")
 
 
 def maps(out):
