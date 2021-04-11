@@ -1,5 +1,6 @@
 #include "game.h"
 #include "bob_new.h"
+#include "map.h"
 #include <ace/managers/copper.h>
 #include <ace/managers/log.h>
 #include <ace/managers/mouse.h>
@@ -57,6 +58,8 @@ static uint16_t s_pPanelPalette[COLORS];
  * };
  */
 
+static void drawBuildingOnTile(UWORD uwTileX, UWORD uwTileY, tBitMap *pBitMap, UWORD uwBitMapX, UWORD uwBitMapY) {
+}
 
 void loadMap(const char* race, uint8_t index) {
     char* mapname = MAPDIR LONGEST_MAPNAME;
@@ -106,6 +109,7 @@ void loadMap(const char* race, uint8_t index) {
                                     TAG_TILEBUFFER_REDRAW_QUEUE_LENGTH, 6,
                                     TAG_TILEBUFFER_COPLIST_OFFSET_START, tileStartPos,
                                     TAG_TILEBUFFER_COPLIST_OFFSET_BREAK, tileBreakPos,
+                                    TAG_TILEBUFFER_CALLBACK_TILE_DRAW, drawBuildingOnTile,
                                     TAG_END);
     s_pMainCamera = s_pMapBuffer->pCamera;
     cameraSetCoord(s_pMainCamera, 0, 0);

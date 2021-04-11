@@ -20,11 +20,17 @@ include_directories(
 )
 
 set(C_SOURCES src/main.c
+              src/units.c
+              src/actions.c
               src/bob_new.c
+              src/map.c
               src/game.c)
 
 set(HEADERS src/game.h
-            src/bob_new.h)
+            src/bob_new.h
+            src/units.h
+            src/map.h
+            src/actions.h)
 
 set(RESOURCES
         ${PROJECT_BINARY_DIR}/resources/imgs/for.plt

@@ -169,10 +169,11 @@ class Map:
                 f.write(bytearray([tiles[x, y].tile % 256]))
         self.get_roads().write(f)
         self.get_walls().write(f)
+        self.get_unit_data().write(f)
 
 
 class Roads:
-    TILE = 18 # TODO: real road layout, and then use tileset mapping
+    TILE = 19 # TODO: real road layout, and then use tileset mapping
 
     def __new__(cls, content):
         inst = super().__new__(cls)
@@ -189,15 +190,103 @@ class Roads:
 
 
 class Walls(Roads):
-    TILE = 0
+    TILE = 1 # TODO: real wall layout, and then use tileset mapping
 
 
 class UnitData:
+    """
+    Unit data consist of multiple records like this:
+
+    byte X: X position on the map.
+    byte Y: Y position on the map.
+    byte Type: Type of the unit.
+    byte player: Player that owns the unit (0 - 4). Gold mines have 4, neutral.
+    """
+
+    WAR1_TYPES = [
+        # 0
+	    "footman", "grunt",
+	    "peasant", "peon",
+	    "human-catapult", "orc-catapult",
+	    "knight", "raider",
+	    "archer", "spearman",
+	    # 10
+	    "conjurer", "warlock",
+	    "cleric", "necrolyte",
+	    "medivh", "lothar",
+	    "wounded", "grizelda",
+	    "garona", "ogre",
+	    # 20
+        None, # "unit-20",
+        "spider",
+        "slime", "fire-elemental",
+        "scorpion", "brigand",
+        None, # "unit-26",
+        "skeleton",
+        "daemon", None, # "unit-29",
+        # 30
+        None, None, # "unit-30", "unit-31",
+        "human-farm", "orc-farm",
+        "human-barracks", "orc-barracks",
+        "church", "temple",
+        "human-tower", "orc-tower",
+	    # 40
+        "human-town-hall", "orc-town-hall",
+        "human-lumber-mill", "orc-lumber-mill",
+        "stable", "kennel",
+        "human-blacksmith", "orc-blacksmith",
+        "stormwind-keep", "blackrock-spire",
+	    # 50
+        "goldmine", # "unit-51",
+        # "peasant-with-wood", "peon-with-wood",
+        # "peasant-with-gold", "peon-with-gold",
+    ]
+
+    # AMIGA TYPES
+    # 4x4
+    human_barracks = 0b1_0000
+    orc_barracks   = 0b1_0001
+    human_mill     = 0b1_0010
+    orc_mill       = 0b1_0011
+    human_stable   = 0b1_0100
+    orc_kennel     = 0b1_0101
+    human_church   = 0b1_0110
+    orc_temple     = 0b1_0111
+    human_townhall = 0b1_1000
+    orc_townhall   = 0b1_1001
+    # room for 5 more...
+    goldmine       = 0b1_1111
+    # 3x3
+    human_smith    = 0b01_000
+    orc_smith      = 0b01_001
+    human_tower    = 0b01_010
+    orc_tower      = 0b01_011
+    human_farm     = 0b01_100
+    orc_farm       = 0b01_101
+    # room for 2 more...
+    # 5x5
+    stormwind      = 0b00_00
+    blackrock      = 0b00_01
+    # room for 2 more...
+
     def __new__(cls, archive, content):
         inst = super().__new__(cls)
         inst.archive = archive
         inst.content = content
         return inst
+
+    def write(self, f):
+        while self.content.remaining():
+            x, y, typ, player = (self.content.read8() for _ in range(4))
+            typ = self.TYPES[typ]
+            if  == "goldmine":
+                gold_hi, gold_lo = self.content.read8(), self.content.read8()
+            if typ > 30 and typ < 52:
+                # this is a building, split it up and write the building tile info
+            else:
+                # this is a unit
+            f.seek(x * 64 + y + Map.OUTPUT_MAP_DATA_OFFSET + 64 * 64, os.SEEK_SET)
+            f.write(bytearray([self.TILE]))
 
 
 class Tiles:

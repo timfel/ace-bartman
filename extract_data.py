@@ -19,7 +19,7 @@ CAMPAIGN_MAPS_START_IDX = 117
 
 MAPPED_TILES = {
     "for": {
-        (0x00, 0x0F): 0x10, # walls until 4-way
+        (0x01, 0x0F): 0x10, # walls until 4-way
         (0x11, 0x1B): 0x10, # walls between 4-way and 4-way-broken
         (0x1D, 0x24): None, # walls between 4-way-broken and 4-way-remains
         (0x26, 0x28): None, # remains of walls until blackended remains of buildings
@@ -36,7 +36,7 @@ MAPPED_TILES = {
         (0xa7, 0xb7): 0x6D, # grass
     },
     "swa": {
-        (0x00, 0x0F): 0x10, # walls until 4-way
+        (0x01, 0x0F): 0x10, # walls until 4-way
         (0x11, 0x1B): 0x10, # walls between 4-way and 4-way-broken
         (0x1D, 0x24): None, # walls between 4-way-broken and 4-way-remains
         (0x26, 0x29): None, # remains of walls until blackended remains of buildings
@@ -67,29 +67,29 @@ MAPPED_TILES = {
         (0x113, 0x11a): 0x66, # grass
     },
     "dun": {
-        (0x00, 0x09): None,
+        (0x01, 0x09): None,
         (0x2e, 0x2e): None,
-        (0x34, 0x34): 0x35, # just darkness
+        (0x34, 0x34): 0x01, # just darkness
         (0x39, 0x3a): 0x3b,
         (0x4b, 0x4c): 0x4d,
         (0x52, 0x56): 0x57, # ground
-        (0x5e, 0x5e): 0x35,
-        (0x63, 0x63): 0x35,
+        (0x5e, 0x5e): 0x01,
+        (0x63, 0x63): 0x01,
         (0x69, 0x6e): 0x57,
         (0x7e, 0x83): 0x57,
         (0x95, 0x9a): 0x57,
         (0xaa, 0xb0): 0x57,
-        (0xb4, 0xb4): 0x35,
-        (0xb6, 0xb6): 0x35,
+        (0xb4, 0xb4): 0x01,
+        (0xb6, 0xb6): 0x01,
         (0xb7, 0xb7): 0x57,
         (0xba, 0xba): 0x57,
         (0xc1, 0xc6): 0x57,
-        (0xcc, 0xcc): 0x35,
-        (0xcf, 0xcf): 0x35,
+        (0xcc, 0xcc): 0x01,
+        (0xcf, 0xcf): 0x01,
         (0xd5, 0xda): 0x57,
         (0xe7, 0xed): 0x57,
-        (0xf0, 0xf0): 0x35,
-        (0xf5, 0xf5): 0x35,
+        (0xf0, 0xf0): 0x01,
+        (0xf5, 0xf5): 0x01,
         (0xfe, 0x103): 0x57,
         (0x110, 0x111): 0x57,
         (0x128, 0x129): 0x57,
@@ -102,46 +102,46 @@ MAP_SPRITESHEETS = {
     # to conserve memory, we remove a lot of frames, leaving mostly only
     # the standing, walking frame, and attacking frames. death frames are shared
     # across most members of a race, except for catapult
-    "human_footman": {"chunk": 279, "remove_frames": [range(5, 35), range(40, 100)]},
+    "human_footman": {chunk: 279, remove_frames: [range(5, 35), range(40, 100)]},
     "orc_grunt": 280,
-    "human_peasant": 281,
+    "human_peasant": {chunk: 281, remove_frames: [range(10, 15), range(20, 100)]},
     "orc_peon": 282,
     "catapult": {
-        "chunk": 284,
-        "remove_frames": [range(5, 35), range(45, 100)],
+        chunk: 284,
+        remove_frames: [range(5, 35), range(45, 100)],
         # we use the same catapult sprites, and just map the faction color to gray
-        "color_mapping": (lambda c: c + 8 if c in range(176, 184) else c),
+        color_mapping: (lambda c: c + 8 if c in range(176, 184) else c),
 	},
     # "human_catapult": 283,
     # "orc_catapult": 284,
-    "human_knight": 285,
+    "human_knight": {chunk: 285, remove_frames: [range(5, 20), range(25, 100)]},
     "orc_raider": 286,
-    "human_archer": {"chunk": 287, "remove_frames": [range(5, 30), range(35, 100)]},
+    "human_archer": {chunk: 287, remove_frames: [range(5, 30), range(35, 100)]},
     "orc_spearman": 288,
-    "human_conjurer": {"chunk": 289, "remove_frames": [range(5, 45), range(50, 100)]},
+    "human_conjurer": {chunk: 289, remove_frames: [range(5, 45), range(50, 100)]},
     "orc_warlock": 290,
-    "human_cleric": {"chunk": 291, "remove_frames": [range(5, 45), range(50, 100)], "max_w": 16},
+    "human_cleric": {chunk: 291, remove_frames: [range(5, 45), range(50, 100)], "max_w": 16},
     "orc_necrolyte": 292,
-    "human_medivh": 293,
-    "human_lothar": 294,
-    "neutral_wounded": 295,
-    "neutral_grizelda,garona": 296,
-    "neutral_ogre": 297,
+    # "human_medivh": 293,
+    # "human_lothar": 294,
+    # "neutral_wounded": 295,
+    # "neutral_grizelda,garona": 296,
+    # "neutral_ogre": 297,
     "neutral_spider": 298,
-    "neutral_slime": 299,
-    "neutral_fire_elemental": 300,
+    # "neutral_slime": 299,
+    # "neutral_fire_elemental": 300,
     "neutral_scorpion": 301,
-    "neutral_brigand": 302,
-    "neutral_the_dead": 303,
-    "neutral_skeleton": 304,
+    # "neutral_brigand": 302,
+    # "neutral_the_dead": 303,
+    "neutral_skeleton": {chunk: 304, remove_frames: [range(10, 100)]},
     "neutral_daemon": 305,
     "neutral_water_elemental": 306,
-    "neutral_dead_bodies": 326,
+    "neutral_dead_bodies": {chunk: 326, remove_frames: [range(1, 5), range(6, 10), range(11, 15), range(16, 20), range(21, 25)]},
     ## Another space saving measure, any resource
     ## carrying is the same spritesheet
     # "human_peasant_with_wood": 327,
     # "orc_peon_with_wood": 328,
-    "human_peasant_with_gold": 329,
+    "human_peasant_with_gold": {chunk: 329, remove_frames: [range(5, 30), range(35, 100)]},
     "orc_peon_with_gold": 330,
 
     # "missile_fireball": 217, 347,
@@ -157,25 +157,25 @@ MAP_SPRITESHEETS = {
     # "missile_water_elemental_projectile": 217, 357,
     "missile_fireball_2": 358,
 
-    "human_farm": {"chunk": 307, "bg_color_idx": 75},
-    "orc_farm": {"chunk": 308, "bg_color_idx": 75},
-    "human_barracks": {"chunk": 309, "bg_color_idx": 75},
-    "orc_barracks": {"chunk": 310, "bg_color_idx": 75},
-    "human_church": {"chunk": 311, "bg_color_idx": 75},
-    "orc_temple": {"chunk": 312, "bg_color_idx": 75},
-    "human_tower": {"chunk": 313, "bg_color_idx": 75},
-    "orc_tower": {"chunk": 314, "bg_color_idx": 75},
-    "human_town_hall": {"chunk": 315, "bg_color_idx": 75},
-    "orc_town_hall": {"chunk": 316, "bg_color_idx": 75},
-    "human_lumber_mill": {"chunk": 317, "bg_color_idx": 75},
-    "orc_lumber_mill": {"chunk": 318, "bg_color_idx": 75},
-    "human_stable": {"chunk": 319, "bg_color_idx": 75},
-    "orc_kennel": {"chunk": 320, "bg_color_idx": 75},
-    "human_blacksmith": {"chunk": 321, "bg_color_idx": 75},
-    "orc_blacksmith": {"chunk": 322, "bg_color_idx": 75},
-    "human_stormwind_keep": {"chunk": 323, "bg_color_idx": 75},
-    "orc_blackrock_spire": {"chunk": 324, "bg_color_idx": 75},
-    "neutral_gold_mine": {"chunk": 325, "bg_color_idx": 75},
+    "human_farm": {chunk: 307, bg_color_idx: 75},
+    "orc_farm": {chunk: 308, bg_color_idx: 75},
+    "human_barracks": {chunk: 309, bg_color_idx: 75},
+    "orc_barracks": {chunk: 310, bg_color_idx: 75},
+    "human_church": {chunk: 311, bg_color_idx: 75},
+    "orc_temple": {chunk: 312, bg_color_idx: 75},
+    "human_tower": {chunk: 313, bg_color_idx: 75},
+    "orc_tower": {chunk: 314, bg_color_idx: 75},
+    "human_town_hall": {chunk: 315, bg_color_idx: 75},
+    "orc_town_hall": {chunk: 316, bg_color_idx: 75},
+    "human_lumber_mill": {chunk: 317, bg_color_idx: 75},
+    "orc_lumber_mill": {chunk: 318, bg_color_idx: 75},
+    "human_stable": {chunk: 319, bg_color_idx: 75},
+    "orc_kennel": {chunk: 320, bg_color_idx: 75},
+    "human_blacksmith": {chunk: 321, bg_color_idx: 75},
+    "orc_blacksmith": {chunk: 322, bg_color_idx: 75},
+    "human_stormwind_keep": {chunk: 323, bg_color_idx: 75},
+    "orc_blackrock_spire": {chunk: 324, bg_color_idx: 75},
+    "neutral_gold_mine": {chunk: 325, bg_color_idx: 75},
     ## We do not include the constructions, instead we
     ## do a similar thing as The Settlers, just drawing a
     ## part of the unfinished building, to conserver memory
